@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: info
+    com:
+      las:
+        workout: debug
+
+springdoc:
+  api-docs:
+    path: /inner/api-docs
+  swagger-ui:
+    path: /inner/swagger-ui/index.html
