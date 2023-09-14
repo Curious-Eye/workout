@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  mongo1:
+    image: mongo:4.4
+    container_name: mongo1
+    command: [ "--replSet", "dev-rs0", "--bind_ip_all", "--port", "27017" ]
+    volumes:
+      - ./persistence/mongo:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: test $$(echo "rs.initiate({_id:'dev-rs0',members:[{_id:0,host:\"mongo1:27017\"}]}).ok || rs.status().ok" | mongo --port 27017 --quiet) -eq 1
+      interval: 10s
+      start_period: 30s

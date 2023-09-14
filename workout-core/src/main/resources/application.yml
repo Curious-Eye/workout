@@ -13,3 +13,10 @@ springdoc:
     path: /inner/api-docs
   swagger-ui:
     path: /inner/swagger-ui/index.html
+
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo1:27017/workout?replicaSet=dev-rs0
+      database: workout
