@@ -12,3 +12,13 @@ services:
       test: test $$(echo "rs.initiate({_id:'dev-rs0',members:[{_id:0,host:\"mongo1:27017\"}]}).ok || rs.status().ok" | mongo --port 27017 --quiet) -eq 1
       interval: 10s
       start_period: 30s
+  gateway:
+    image: nginx:stable
+    network_mode: host
+    restart: always
+    volumes:
+      - ./gateway/config.nginx:/etc/nginx/conf.d/default.conf
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 256m

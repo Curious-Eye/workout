@@ -19,7 +19,7 @@ data class UserDto(
 
 }
 
-data class AuthenticateRqDto(
+data class UserAuthenticateRqDto(
     val username: String,
     val password: String,
 )
@@ -27,6 +27,11 @@ data class AuthenticateRqDto(
 data class UserAuthenticateRespDto(
     val accessToken: String,
     val refreshToken: String?,
+)
+
+data class UserRefreshTokensRqDto(
+    val accessTokenId: String,
+    val refreshToken: String,
 )
 
 data class UserRefreshTokensRespDto(

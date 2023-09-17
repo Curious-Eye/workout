@@ -1,11 +1,12 @@
 package com.las.workout.user
 
 import com.las.workout.BaseTest
+import com.las.workout.jwt.service.AuthTokensService
 import com.las.workout.test.getAuthed
-import com.las.workout.user.api.AUTH_ACCESS_TOKEN_HEADER_NAME
-import com.las.workout.user.api.AUTH_REFRESH_TOKEN_HEADER_NAME
+import com.las.workout.user.api.AUTH_ACCESS_TOKEN_ID_PARAM_NAME
 import com.las.workout.user.api.AUTH_REFRESH_TOKEN_PARAM_NAME
-import com.las.workout.user.api.dto.AuthenticateRqDto
+import com.las.workout.user.api.dto.UserAuthenticateRqDto
+import com.las.workout.user.api.dto.UserAuthenticateRespDto
 import com.las.workout.user.api.dto.UserDto
 import com.las.workout.user.api.dto.UserRegisterDto
 import io.kotest.matchers.shouldBe
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class UserTests : BaseTest() {
 
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
+    @Autowired private lateinit var authTokensService: AuthTokensService
 
     @Test
     fun `API - User should be able to register`() {
@@ -27,7 +29,7 @@ class UserTests : BaseTest() {
 
         // WHEN
         val res = webTestClient.post()
-            .uri("/api/auth/actions/registration")
+            .uri("/api/auth/actions/register")
             .bodyValue(UserRegisterDto(username = username, password = password))
             .exchange()
 
@@ -55,24 +57,20 @@ class UserTests : BaseTest() {
         // WHEN
         val res = webTestClient.post()
             .uri("/api/auth/actions/authenticate")
-            .bodyValue(AuthenticateRqDto(username = username, password = password))
+            .bodyValue(UserAuthenticateRqDto(username = username, password = password))
             .exchange()
 
         // THEN
         res.expectStatus().is2xxSuccessful
 
-        var accessToken = ""
-        res.expectHeader().value(AUTH_ACCESS_TOKEN_HEADER_NAME) { accessToken = it }
-        accessToken shouldHaveMinLength 5
-
-        res.expectHeader().value(AUTH_REFRESH_TOKEN_HEADER_NAME) {
-            it shouldHaveMinLength 5
-        }
+        val resp = res.expectBody(UserAuthenticateRespDto::class.java).returnResult().responseBody!!
+        resp.accessToken shouldHaveMinLength 5
+        resp.refreshToken shouldHaveMinLength 5
 
         // WHEN
         val res2 = webTestClient.get()
             .uri("/api/users/me")
-            .header("Authorization", "Bearer $accessToken")
+            .header("Authorization", "Bearer ${resp.accessToken}")
             .exchange()
 
         // THEN
@@ -90,11 +88,13 @@ class UserTests : BaseTest() {
         val userSetup = dataHelper.setupUser(id = "u1").block()!!
         val accessToken = userSetup.accessToken
         val refreshToken = userSetup.refreshToken!!
+        val accessTokenId = authTokensService.parseAccessToken(accessToken).block()!!.id
 
         // WHEN
         val res = webTestClient.post()
             .uri {
                 it.path("/api/auth/actions/refresh-tokens")
+                    .queryParam(AUTH_ACCESS_TOKEN_ID_PARAM_NAME, accessTokenId)
                     .queryParam(AUTH_REFRESH_TOKEN_PARAM_NAME, refreshToken)
                     .build()
             }
@@ -103,18 +103,18 @@ class UserTests : BaseTest() {
         // THEN
         res.expectStatus().is2xxSuccessful
 
-        var newAccessToken = ""
-        res.expectHeader().value(AUTH_ACCESS_TOKEN_HEADER_NAME) { newAccessToken = it }
-        newAccessToken shouldHaveMinLength 5
-        newAccessToken shouldNotBe accessToken
+        val resp = res.expectBody(UserAuthenticateRespDto::class.java).returnResult().responseBody!!
+        resp.accessToken shouldHaveMinLength 5
+        resp.refreshToken shouldHaveMinLength 5
 
-        var newRefreshToken = ""
-        res.expectHeader().value(AUTH_REFRESH_TOKEN_HEADER_NAME) { newRefreshToken = it }
-        newRefreshToken shouldHaveMinLength 5
-        newRefreshToken shouldNotBe refreshToken
+        resp.accessToken shouldHaveMinLength 5
+        resp.accessToken shouldNotBe accessToken
+
+        resp.refreshToken shouldHaveMinLength 5
+        resp.refreshToken shouldNotBe refreshToken
 
         // WHEN
-        val res2 = webTestClient.getAuthed(newAccessToken)
+        val res2 = webTestClient.getAuthed(resp.accessToken)
             .uri("/api/users/me")
             .exchange()
 

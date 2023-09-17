@@ -1,10 +1,10 @@
 package com.las.workout.jwt.service
 
 import com.las.core.ext.errorIfEmpty
+import com.las.workout.exception.UnauthorizedException
 import com.las.workout.jwt.data.entity.AuthTokensEntity
 import com.las.workout.jwt.data.entity.RefreshTokenEntity
 import com.las.workout.jwt.data.repository.AuthTokensRepository
-import com.las.workout.jwt.exception.JwtException
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +28,7 @@ class AuthTokensService {
     @Autowired private lateinit var jwtDecoder: ReactiveJwtDecoder
     @Autowired private lateinit var authTokensRepository: AuthTokensRepository
 
+    private val accessTokenValidDurationSeconds = 60L * 60
     private val refreshTokenValidDurationSeconds = 60L * 60 * 24 * 7
 
     val refreshTokenGenerator =
@@ -42,7 +43,8 @@ class AuthTokensService {
 
         return Mono.defer {
             val date = Date()
-            val expiresAt = Date.from(date.toInstant().plusSeconds(refreshTokenValidDurationSeconds))
+            val accessTokenExpireAt = Date.from(date.toInstant().plusSeconds(accessTokenValidDurationSeconds))
+            val refreshTokenExpireAt = Date.from(date.toInstant().plusSeconds(refreshTokenValidDurationSeconds))
             val id = ObjectId().toString()
 
             val accessToken = jwtEncoder.encode(
@@ -52,7 +54,7 @@ class AuthTokensService {
                         .subject(userId)
                         .issuer("las.workout")
                         .issuedAt(date.toInstant())
-                        .expiresAt(expiresAt.toInstant())
+                        .expiresAt(accessTokenExpireAt.toInstant())
                         .build()
                 )
             ).tokenValue
@@ -64,11 +66,10 @@ class AuthTokensService {
                     id = id,
                     userId = userId,
                     accessToken = accessToken,
-                    refreshToken = if (refreshToken == null) null
-                    else {
+                    refreshToken = refreshToken?.let {
                         RefreshTokenEntity(
                             token = refreshToken,
-                            expirationDate = expiresAt,
+                            expirationDate = refreshTokenExpireAt,
                             issuedAt = date
                         )
                     },
@@ -84,11 +85,16 @@ class AuthTokensService {
     }
 
     @Transactional
-    fun refreshTokens(refreshToken: String): Mono<AuthTokensEntity> {
-        log.debug("Refresh tokens with refreshToken={}", refreshToken)
+    fun refreshTokens(accessTokenId: String, refreshToken: String): Mono<AuthTokensEntity> {
+        log.debug("Refresh tokens with accessTokenId={}", accessTokenId)
 
-        return authTokensRepository.findByRefreshTokenValueAndUsed(refreshToken, false)
-            .errorIfEmpty(JwtException("Invalid refresh token"))
+        return authTokensRepository.findById(accessTokenId)
+            .filter {
+                it.refreshToken!!.token == refreshToken &&
+                !it.refreshToken.used &&
+                it.refreshToken.expirationDate.after(Date())
+            }
+            .errorIfEmpty(UnauthorizedException("Invalid refresh token"))
             .flatMap {
                 it.refreshToken!!.used = true
                 authTokensRepository.save(it)
@@ -98,10 +104,23 @@ class AuthTokensService {
             }
     }
 
-    fun parseAccessToken(accessToken: String): Mono<UserFromToken> {
+    fun parseAccessToken(accessToken: String): Mono<AccessTokenParsed> {
         return jwtDecoder.decode(accessToken)
-            .map { UserFromToken(id = it.subject) }
+            .map {
+                AccessTokenParsed(
+                    id = it.id,
+                    user = UserFromToken(id = it.subject)
+                )
+            }
+            .doOnError {
+                log.warn("Error parsing access token: {}", it.message)
+            }
     }
+
+    data class AccessTokenParsed(
+        val id: String,
+        val user: UserFromToken
+    )
 
     data class UserFromToken(
         val id: String,

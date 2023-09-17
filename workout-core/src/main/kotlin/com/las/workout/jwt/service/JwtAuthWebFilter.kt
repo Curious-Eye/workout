@@ -28,12 +28,10 @@ class JwtAuthWebFilter(
 
         return authTokensService.parseAccessToken(accessToken)
             .onErrorResume {
-                log.warn("Received error from authTokensService.parseAccessToken: {}", it.message)
-
                 chain.filter(exchange).then(Mono.empty())
             }
             .flatMap {
-                val userId = it.id
+                val userId = it.user.id
 
                 val user = User(
                     userId,

@@ -6,8 +6,8 @@ import com.las.workout.core.api.dto.WorkoutRecordRqDto
 import com.las.workout.core.data.entity.*
 import com.las.workout.core.data.repository.ExerciseRepository
 import com.las.workout.core.data.repository.WorkoutRepository
-import com.las.workout.core.exception.ExerciseException
-import com.las.workout.core.exception.WorkoutException
+import com.las.workout.exception.EntityNotFoundException
+import com.las.workout.exception.IllegalArgumentException
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,10 +57,10 @@ class WorkoutService {
         log.debug("User {} record workout {} exercise {}", userId, workoutId, rq)
 
         if (rq.weight.bodyWeight != true && rq.weight.kg == null)
-            return Mono.error(WorkoutException("One of bodyWeight or kg must be specified"))
+            return Mono.error(IllegalArgumentException("One of bodyWeight or kg must be specified"))
 
         if (rq.weight.bodyWeight == true && rq.weight.kg != null)
-            return Mono.error(WorkoutException("Only one of bodyWeight or kg must be specified"))
+            return Mono.error(IllegalArgumentException("Only one of bodyWeight or kg must be specified"))
 
         return findWorkoutOrThrow(workoutId)
             .zipWhenToPair(findExerciseOrThrow(rq.exerciseId))
@@ -90,17 +90,17 @@ class WorkoutService {
 
     private fun findWorkoutOrThrow(workoutId: String) : Mono<WorkoutEntity> {
         return workoutRepository.findById(workoutId)
-            .switchIfEmpty(Mono.error(WorkoutException("Workout $workoutId does not exist")))
+            .switchIfEmpty(Mono.error(EntityNotFoundException("Workout $workoutId does not exist")))
     }
 
     fun findExerciseOrThrow(exerciseId: String) : Mono<ExerciseEntity> {
         return exerciseRepository.findById(exerciseId)
-            .switchIfEmpty(Mono.error(ExerciseException("Exercise $exerciseId does not exist")))
+            .switchIfEmpty(Mono.error(EntityNotFoundException("Exercise $exerciseId does not exist")))
     }
 
     fun findExerciseForUser(userId: String, exerciseId: String) : Mono<ExerciseEntity> {
         return exerciseRepository.findByIdAndUserId(exerciseId, userId)
-            .switchIfEmpty(Mono.error(ExerciseException("Exercise $exerciseId does not exist")))
+            .switchIfEmpty(Mono.error(EntityNotFoundException("Exercise $exerciseId does not exist")))
     }
 
     fun getExercises(userId: String): Flux<ExerciseEntity> {
