@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import WorkoutService from "~/services/workoutService";
 import {useMainStore} from "~/store";
 
 definePageMeta({
   middleware: 'auth'
 })
 
-let workouts = await WorkoutService.getWorkouts()
+let workouts = await useWorkoutApi().getWorkouts()
 useMainStore().setWorkouts(workouts)
 </script>
 

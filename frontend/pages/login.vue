@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import {useUserStore} from "~/store";
-import {$fetch} from "ofetch";
-import AuthService from "~/services/authService";
 
 const route = useRoute()
 
@@ -27,14 +25,8 @@ const onSubmit = async function () {
   if (!form.value) return
 
   loading.value = true
-  await AuthService.authenticate(username.value, password.value)
-      .then(res => {
-        useUserStore().setUserTokens(res.accessToken, res.refreshToken)
-        navigateTo(getRedirectUri())
-      })
-      .catch((reason) => {
-        console.log('Could not login: ' + reason)
-      });
+  await useAuthApi().authenticate(username.value, password.value);
+  navigateTo(getRedirectUri())
   loading.value = false
 }
 

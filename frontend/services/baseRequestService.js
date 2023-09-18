@@ -1,198 +1,167 @@
-import axios from "axios";
-import {useUserStore} from "~/store";
-
 export default {
     /**
      *
      * @param path {string}
+     * @param baseUri {string}
+     * @param accessToken {string}
+     * @param refreshToken {string}
      * @param silentReAuthenticate {boolean}
-     * @return {Promise<any>}
+     * @return {Promise<{data: *}|{data: *, newTokens: { refreshToken: string, accessToken: string }}
+     * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
      */
     async getAuthed(
         path,
+        baseUri,
+        accessToken,
+        refreshToken,
         silentReAuthenticate = true
     ) {
-        const res = await this.getAuthedSimple(
+        return await makeRequest(
             path,
-            useRuntimeConfig().public.serverHost,
-            useUserStore().user.accessToken,
-            useUserStore().user.refreshToken,
+            null,
+            baseUri,
+            accessToken,
+            refreshToken,
             silentReAuthenticate
         )
-
-        if (!!res.newTokens)
-            useUserStore().setUserTokens(res.newTokens.accessToken, res.newTokens.refreshToken)
-
-        return res.data
     },
     /**
      *
      * @param path {string}
-     * @param body {any}
+     * @param body any
+     * @param baseUri {string}
+     * @param accessToken {string}
+     * @param refreshToken {string}
      * @param silentReAuthenticate {boolean}
-     * @return {Promise<any>}
+     * @return {Promise<{data: *}|{data: *, newTokens: { refreshToken: string, accessToken: string }}
+     * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
      */
     async postAuthed(
         path,
         body,
+        baseUri,
+        accessToken,
+        refreshToken,
         silentReAuthenticate = true
     ) {
-        const res = await this.postAuthedSimple(
+        return await makeRequest(
             path,
             body,
-            useRuntimeConfig().public.serverHost,
-            useUserStore().user.accessToken,
-            useUserStore().user.refreshToken,
+            baseUri,
+            accessToken,
+            refreshToken,
             silentReAuthenticate
         )
-
-        if (!!res.newTokens)
-            useUserStore().setUserTokens(res.newTokens.accessToken, res.newTokens.refreshToken)
-
-        return res.data
-    },
-    /**
-     *
-     * @param path {string}
-     * @param body {any}
-     * @param baseUri {string}
-     * @param accessToken {string}
-     * @param refreshToken {string}
-     * @param silentReAuthenticate {boolean}
-     * @return {Promise<{data: any, newTokens?: { refreshToken: string, accessToken: string }}>}
-     */
-    async postAuthedSimple(
-        path,
-        body,
-        baseUri,
-        accessToken,
-        refreshToken,
-        silentReAuthenticate = true
-    ) {
-        let headers = {
-            Authorization: 'Bearer ' + accessToken
-        }
-        if (!!!accessToken)
-            headers = {}
-
-        const res = await axios.post(path, body, {
-            headers,
-            baseURL: baseUri
-        })
-
-
-        if (res.status !== 200) {
-            console.log('Err on postAuthed:')
-            console.log(res)
-            if (res.status === 401 && silentReAuthenticate && !!refreshToken) {
-                const {newAccessToken, newRefreshToken} = await refreshTokens(accessToken, refreshToken)
-
-                const res2 = await axios.post(path, body, {
-                    headers: {
-                        Authorization: 'Bearer ' + newAccessToken
-                    },
-                    baseURL: baseUri
-                })
-
-                if (res2.status !== 200)
-                    throw new Error('Unauthorized')
-
-                return {
-                    data: res2.data,
-                    newTokens: {
-                        accessToken: newAccessToken,
-                        refreshToken: newRefreshToken
-                    }
-                }
-            } else {
-                throw new Error(res.statusText)
-            }
-        }
-
-        return {
-            data: res.data
-        }
-    },
-    /**
-     *
-     * @param path {string}
-     * @param baseUri {string}
-     * @param accessToken {string}
-     * @param refreshToken {string}
-     * @param silentReAuthenticate {boolean}
-     * @return {Promise<{data: any, newTokens?: { refreshToken: string, accessToken: string }}>}
-     */
-    async getAuthedSimple(
-        path,
-        baseUri,
-        accessToken,
-        refreshToken,
-        silentReAuthenticate = true
-    ) {
-        let headers = {
-            Authorization: 'Bearer ' + accessToken
-        }
-        if (!!!accessToken)
-            headers = {}
-
-        const res = await axios.get(path, {
-            headers,
-            baseURL: baseUri
-        })
-
-        if (res.status !== 200) {
-            console.log('Err on postAuthed:')
-            console.log(res)
-            if (res.status === 401 && silentReAuthenticate && !!refreshToken) {
-                const {newAccessToken, newRefreshToken} = await refreshTokens(accessToken, refreshToken)
-
-                const res2 = await axios.get(path, {
-                    headers: {
-                        Authorization: 'Bearer ' + newAccessToken
-                    },
-                    baseURL: baseUri
-                })
-
-                if (res2.status !== 200)
-                    throw new Error('Unauthorized')
-
-                return {
-                    data: res2.data,
-                    newTokens: {
-                        accessToken: newAccessToken,
-                        refreshToken: newRefreshToken
-                    }
-                }
-            } else {
-                throw new Error(res.statusText)
-            }
-        }
-
-        return {
-            data: res.data
-        }
     }
 }
 
 /**
  *
+ * @param path {string}
+ * @param baseUri {string}
+ * @param body any
  * @param accessToken {string}
  * @param refreshToken {string}
- * @return {Promise<{refreshToken: string, accessToken: string}>}
+ * @param silentReAuthenticate {boolean}
+ * @return {Promise<{data: *}|{data: *, newTokens: { refreshToken: string, accessToken: string }}
+ * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
  */
-async function refreshTokens(accessToken, refreshToken) {
-    const refreshTokens = await axios.post('/api/auth/actions/refresh-tokens', {
-        refreshToken,
-        accessTokenId: getAccessTokenId(accessToken)
-    })
+async function makeRequest(
+    path,
+    body,
+    baseUri,
+    accessToken,
+    refreshToken,
+    silentReAuthenticate = true
+) {
+    let headers = {Authorization: 'Bearer ' + accessToken}
 
-    if (refreshTokens.status !== 200)
-        throw new Error('Unauthorized')
+    if (!!!accessToken)
+        headers = {}
+
+    const opts = {headers}
+
+    if (!!body) {
+        opts.body = body
+        opts.method = 'post'
+    }
+
+    const {data, error} = await fetchWrapped(baseUri + path, opts)
+
+    if (!!error) {
+        if (error.response.status === 401 && silentReAuthenticate && !!refreshToken) {
+            const {newAccessToken, newRefreshToken, error2} = await refreshTokens(baseUri, accessToken, refreshToken)
+
+            if (!!error2)
+                return {error: error2}
+
+            headers.Authorization = 'Bearer ' + newAccessToken
+            opts.headers = headers
+
+            const {data: data2, error: error3} = await fetchWrapped(baseUri + path, opts)
+
+            if (!!error3)
+                return {
+                    error: error3,
+                    newTokens: {
+                        accessToken: newAccessToken,
+                        refreshToken: newRefreshToken
+                    }
+                }
+
+            return {
+                data: data2,
+                newTokens: {
+                    accessToken: newAccessToken,
+                    refreshToken: newRefreshToken
+                }
+            }
+        } else {
+            return {error}
+        }
+    }
+
+    return {data}
+}
+
+/**
+ *
+ * @param baseUri {string}
+ * @param accessToken {string}
+ * @param refreshToken {string}
+ * @return {Promise<{accessToken: string, refreshToken: string}|{error: *}>}
+ */
+async function refreshTokens(baseUri, accessToken, refreshToken) {
+    console.log('Try refresh tokens')
+    const accessTokenId = getAccessTokenId(accessToken)
+
+    const opts = {
+        headers: {Authorization: 'Bearer ' + accessToken},
+        body: {refreshToken, accessTokenId},
+        method: 'post'
+    }
+
+    const {data, error} = await fetchWrapped(baseUri + '/api/auth/actions/refresh-tokens', opts)
+
+    if (error.response.status !== 200)
+        return {error}
 
     return {
-        accessToken: refreshTokens.data.accessToken,
-        refreshToken: refreshTokens.data.refreshToken
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken
     }
+}
+
+/**
+ *
+ * @param path {string}
+ * @param opts {any}
+ * @return {Promise<{data: *}|{error: *}>}
+ */
+async function fetchWrapped(path, opts) {
+    return await $fetch(path, opts)
+        .then(data => ({data}))
+        .catch(error => ({error}))
 }
 
 /**
