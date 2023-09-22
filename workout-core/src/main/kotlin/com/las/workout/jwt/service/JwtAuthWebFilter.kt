@@ -18,13 +18,19 @@ class JwtAuthWebFilter(
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
+        /**
+         * Allowing for mobile to pass accessToken via headers
+         */
         val bearerTokenHeader =
-            exchange.request.headers.get("Authorization")?.firstOrNull { it.startsWith("Bearer") }
+            exchange.request.headers["Authorization"]?.firstOrNull { it.startsWith("Bearer") }
 
-        if (bearerTokenHeader == null)
+        var accessToken = bearerTokenHeader?.substringAfter("Bearer ")
+
+        if (accessToken.isNullOrEmpty())
+            accessToken = exchange.request.cookies["accessToken"]?.firstOrNull()?.value
+
+        if (accessToken == null)
             return chain.filter(exchange)
-
-        val accessToken = bearerTokenHeader.substringAfter("Bearer ")
 
         return authTokensService.parseAccessToken(accessToken)
             .onErrorResume {

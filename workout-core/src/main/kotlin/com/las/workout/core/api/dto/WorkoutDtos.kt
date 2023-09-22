@@ -27,7 +27,7 @@ data class WorkoutRecordedExerciseDto(
     val weight: WeightDto,
     val rir: RepetitionsInReserveDto?,
     val warmup: Boolean?,
-    val mioRepMatch: Boolean?,
+    val myoRepMatch: Boolean?,
 ) {
 
     constructor(exerciseRecord: ExerciseRecordEntity) : this(
@@ -36,7 +36,7 @@ data class WorkoutRecordedExerciseDto(
         weight = WeightDto(exerciseRecord.weight),
         rir = exerciseRecord.rir?.let { RepetitionsInReserveDto(min = it.min, max = it.max) },
         warmup = exerciseRecord.warmup,
-        mioRepMatch = exerciseRecord.mioRepMatch,
+        myoRepMatch = exerciseRecord.myoRepMatch,
     )
 
 }
@@ -67,7 +67,7 @@ data class WorkoutRecordExerciseRqDto(
     val weight: WeightDto,
     val rir: RepetitionsInReserveDto?,
     val warmup: Boolean?,
-    val mioRepMatch: Boolean?,
+    val myoRepMatch: Boolean?,
 )
 
 data class WorkoutRecordExerciseRespDto(

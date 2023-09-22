@@ -1,10 +1,12 @@
-package com.las.workout.exception
+package com.las.workout.exception.advice
 
+import com.las.workout.exception.BaseHttpException
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.ResponseEntity
 import org.springframework.http.server.reactive.ServerHttpRequest
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -26,7 +28,8 @@ class GlobalHttpExceptionsAdvice {
         return ReactiveRequestContextHolder.request.map { request ->
             val ip = if (request.isPresent) request.get().ip() else null
             val ua = if (request.isPresent) request.get().ua() else null
-            log.warn("BEX_ERR({}, {})->[{}] - [{}]. UA={}", user?.username, ip, ex::class.simpleName, ex.message, ua)
+            val path = if (request.isPresent) request.get().path else null
+            log.warn("BEX_ERR({}, {})->[{}]->[{}] - [{}]. UA={}", user?.username, ip, path, ex::class.simpleName, ex.message, ua)
             ResponseEntity(ex.data(), ex.status)
         }
 
@@ -37,7 +40,11 @@ class GlobalHttpExceptionsAdvice {
         return ReactiveRequestContextHolder.request.map { request ->
             val ip = if (request.isPresent) request.get().ip() else null
             val ua = if (request.isPresent) request.get().ua() else null
-            log.error("API_ERR({}, {})->[{}] - [{}]. UA={}", user?.username, ip, ex::class.simpleName, ex, ua)
+            val path = if (request.isPresent) request.get().path else null
+            if (ex is AccessDeniedException)
+                log.warn("API_ERR({}, {})->[{}]->[{}] - [{}]. UA={}", user?.username, ip, path, ex::class.simpleName, ex, ua)
+            else
+                log.error("API_ERR({}, {})->[{}]->[{}] - [{}]. UA={}", user?.username, ip, path, ex::class.simpleName, ex, ua)
             throw ex
         }
     }

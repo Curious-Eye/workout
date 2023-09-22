@@ -32,7 +32,7 @@ data class ExerciseRecordEntity(
     var weight: WeightEntity,
     var warmup: Boolean? = null,
     var rir: RepetitionsInReserveEntity? = null,
-    var mioRepMatch: Boolean? = null,
+    var myoRepMatch: Boolean? = null,
 )
 
 data class RepetitionsInReserveEntity(

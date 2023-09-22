@@ -1,36 +1,38 @@
-import {useUserStore} from "~/store";
-import BaseRequestService from "~/services/baseRequestService";
+import {useApi} from "~/composables/useApi";
+import {useCookie} from "#app";
 
 export const useAuthApi = () => {
-    const serverHost = useRuntimeConfig().public.serverHost
-    const at = useUserStore().user.accessToken
-    const rt = useUserStore().user.refreshToken
+    const app = useNuxtApp()
+    const at = useState('accessToken', () => useCookie('accessToken').value)
+    const rt = useState('refreshToken', () => useCookie('refreshToken').value)
 
     return {
         /**
          *
          * @param username {string}
          * @param password {string}
-         * @return {Promise<{accessToken: string, refreshToken: string}>}
+         * @return {Promise<{data: {accessToken: string, refreshToken: string}}|{error:*}>}
          */
         async authenticate(username, password) {
             console.log('Try authenticate')
             const {data, error} =
-                await BaseRequestService.postAuthed(
+                await useApi(app).postAnonymous(
                     '/api/auth/actions/authenticate',
-                    {username, password},
-                    serverHost, '', '', false
+                    {username, password}
                 )
 
-            if (error) {
+            if (!!error) {
                 console.log('Error from authenticate: ')
-                console.log(JSON.stringify(error))
-                throw new Error(error)
+                console.log(error)
+                return {error}
             }
 
-            useUserStore().setUserTokens(data.accessToken, data.refreshToken)
+            document.cookie = `accessToken=${data.accessToken}`
+            document.cookie = `refreshToken=${data.refreshToken}`
+            at.value = data.accessToken
+            rt.value = data.refreshToken
 
-            return data
+            return {data}
         }
     }
 }

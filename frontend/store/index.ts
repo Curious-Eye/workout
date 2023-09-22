@@ -1,47 +1,47 @@
 import {defineStore} from 'pinia'
-import {Workout} from "~/domain/domain";
+import {Exercise, ExerciseRecord, Workout} from "~/domain/domain";
 
 export const useMainStore = defineStore('main', {
     state: () => ({
-        workouts: new Map() as Map<string, Workout>
+        workouts: ref([] as Workout[]),
+        exercises: [] as Exercise[],
+        lastExerciseRecordInput: {} as ExerciseRecord,
+        authenticated: !!useCookie('accessToken').value
     }),
     getters: {
     },
     actions: {
-        getWorkout(id: string): Workout {
-            return this.workouts.get(id) as Workout
-        },
         setWorkouts(workouts: Workout[]) {
-            this.workouts = new Map<string, Workout>(workouts.map(value => [value.id, value]))
-        }
-    },
-    persist: true,
-})
-
-export const useUserStore = defineStore('user', {
-    state: () => {
-        return {
-            user: {
-                accessToken: '',
-                refreshToken: ''
+            for (let i = 0; i < workouts.length; ++i) {
+                workouts[i].date = new Date(workouts[i].date)
             }
-        }
-    },
-    getters: {
-        /**
-         * Returns true if current user is authenticated.
-         * No request to the backend is performed.
-         * @return {boolean}
-         */
-        isAuthenticated(): boolean {
-            return !!this.user.accessToken
-        }
-    },
-    actions: {
-        setUserTokens(accessToken: string, refreshToken: string) {
-            this.user.accessToken = accessToken
-            this.user.refreshToken = refreshToken
+            this.workouts = workouts
+        },
+        addWorkout(workout: Workout) {
+            workout.date = new Date(workout.date)
+            this.workouts.splice(0, 0, workout)
+        },
+        setWorkout(workout: Workout) {
+            workout.date = new Date(workout.date)
+            const ind = this.workouts.findIndex(value => value.id === workout.id)
+            if (ind !== -1) this.workouts.splice(ind, 1, workout)
+            else this.workouts.push(workout)
+        },
+        getExercise(id: string): Exercise {
+            return this.exercises.find(value => value.id === id) as Exercise
+        },
+        setExercises(exercises: Exercise[]) {
+            this.exercises = exercises
+        },
+        addExercise(exercise: Exercise) {
+            this.exercises.push(exercise)
+        },
+        deleteWorkout(workoutId: string) {
+            const ind = this.workouts.findIndex(value => value.id === workoutId)
+            this.workouts.splice(ind, 1)
         },
     },
-    persist: true
+    persist: {
+        storage: persistedState.localStorage
+    },
 })

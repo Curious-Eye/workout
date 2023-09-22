@@ -17,6 +17,7 @@ export default {
         silentReAuthenticate = true
     ) {
         return await makeRequest(
+            'get',
             path,
             null,
             baseUri,
@@ -45,8 +46,36 @@ export default {
         silentReAuthenticate = true
     ) {
         return await makeRequest(
+            'post',
             path,
             body,
+            baseUri,
+            accessToken,
+            refreshToken,
+            silentReAuthenticate
+        )
+    },
+    /**
+     *
+     * @param path {string}
+     * @param baseUri {string}
+     * @param accessToken {string}
+     * @param refreshToken {string}
+     * @param silentReAuthenticate {boolean}
+     * @return {Promise<{data: *}|{data: *, newTokens: { refreshToken: string, accessToken: string }}
+     * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
+     */
+    async deleteAuthed(
+        path,
+        baseUri,
+        accessToken,
+        refreshToken,
+        silentReAuthenticate = true
+    ) {
+        return await makeRequest(
+            'delete',
+            path,
+            null,
             baseUri,
             accessToken,
             refreshToken,
@@ -57,6 +86,7 @@ export default {
 
 /**
  *
+ * @param method {string}
  * @param path {string}
  * @param baseUri {string}
  * @param body any
@@ -67,6 +97,7 @@ export default {
  * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
  */
 async function makeRequest(
+    method,
     path,
     body,
     baseUri,
@@ -74,28 +105,34 @@ async function makeRequest(
     refreshToken,
     silentReAuthenticate = true
 ) {
-    let headers = {Authorization: 'Bearer ' + accessToken}
+    let headers = {Cookie: 'accessToken=' + accessToken}
 
-    if (!!!accessToken)
+    if (!!!accessToken || process.client)
         headers = {}
 
-    const opts = {headers}
+    const opts = {headers: headers}
 
     if (!!body) {
         opts.body = body
-        opts.method = 'post'
     }
+    opts.method = method
 
     const {data, error} = await fetchWrapped(baseUri + path, opts)
 
     if (!!error) {
-        if (error.response.status === 401 && silentReAuthenticate && !!refreshToken) {
-            const {newAccessToken, newRefreshToken, error2} = await refreshTokens(baseUri, accessToken, refreshToken)
+        if (error.status === 401 && silentReAuthenticate && !!refreshToken) {
+            const {accessToken: newAccessToken, refreshToken: newRefreshToken, error: error2} =
+                await refreshTokens(baseUri, accessToken, refreshToken)
 
             if (!!error2)
                 return {error: error2}
 
-            headers.Authorization = 'Bearer ' + newAccessToken
+            console.log('Tokens refreshed. Try repeat request...')
+            if (process.client) {
+                document.cookie = `accessToken=${newAccessToken}`
+                document.cookie = `refreshToken=${newRefreshToken}`
+            }
+            headers.Cookie = 'accessToken=' + newAccessToken
             opts.headers = headers
 
             const {data: data2, error: error3} = await fetchWrapped(baseUri + path, opts)
@@ -132,18 +169,17 @@ async function makeRequest(
  * @return {Promise<{accessToken: string, refreshToken: string}|{error: *}>}
  */
 async function refreshTokens(baseUri, accessToken, refreshToken) {
-    console.log('Try refresh tokens')
+    console.log('Try refreshTokens')
     const accessTokenId = getAccessTokenId(accessToken)
 
     const opts = {
-        headers: {Authorization: 'Bearer ' + accessToken},
         body: {refreshToken, accessTokenId},
         method: 'post'
     }
 
     const {data, error} = await fetchWrapped(baseUri + '/api/auth/actions/refresh-tokens', opts)
 
-    if (error.response.status !== 200)
+    if (!!error)
         return {error}
 
     return {
@@ -156,12 +192,12 @@ async function refreshTokens(baseUri, accessToken, refreshToken) {
  *
  * @param path {string}
  * @param opts {any}
- * @return {Promise<{data: *}|{error: *}>}
+ * @return {Promise<{data: *}|{error: { status: number }}>}
  */
 async function fetchWrapped(path, opts) {
     return await $fetch(path, opts)
         .then(data => ({data}))
-        .catch(error => ({error}))
+        .catch(error => ({error: {status: error.response.status}}))
 }
 
 /**

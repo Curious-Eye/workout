@@ -13,3 +13,9 @@ fun WebTestClient.getAuthed(accessToken: String): WebTestClient.RequestHeadersUr
         .apply {
             this.header("Authorization", "Bearer $accessToken")
         }
+
+fun WebTestClient.deleteAuthed(accessToken: String): WebTestClient.RequestHeadersUriSpec<*> =
+    this.delete()
+        .apply {
+            this.header("Authorization", "Bearer $accessToken")
+        }

@@ -7,6 +7,7 @@ import com.las.workout.core.data.entity.RepetitionsInReserveEntity
 import com.las.workout.core.data.entity.WeightEntity
 import com.las.workout.stats.api.dto.StatsGetForExerciseRespDto
 import com.las.workout.test.DataHelper
+import com.las.workout.test.deleteAuthed
 import com.las.workout.test.getAuthed
 import com.las.workout.test.postAuthed
 import io.kotest.matchers.collections.shouldHaveSize
@@ -97,7 +98,7 @@ class WorkoutTests : BaseTest() {
                     ),
                     rir = RepetitionsInReserveDto(min = 2, max = 3),
                     warmup = null,
-                    mioRepMatch = null,
+                    myoRepMatch = null,
                 )
             )
             .exchange()
@@ -114,7 +115,7 @@ class WorkoutTests : BaseTest() {
         exerciseDto.weight.bodyWeight shouldBe null
         exerciseDto.rir!!.min shouldBe 2
         exerciseDto.rir!!.max shouldBe 3
-        exerciseDto.mioRepMatch shouldBe null
+        exerciseDto.myoRepMatch shouldBe null
     }
 
     @Test
@@ -140,12 +141,14 @@ class WorkoutTests : BaseTest() {
         val resp =
             res.expectBody(object : ParameterizedTypeReference<List<ExerciseDto>>() {}).returnResult().responseBody!!
         resp.size shouldBe 3
-        resp[0].id shouldBe "e1"
-        resp[0].name shouldBe "Squats"
-        resp[1].id shouldBe "e2"
-        resp[1].name shouldBe "Bench press"
-        resp[2].id shouldBe "e3"
-        resp[2].name shouldBe "Overhead press"
+
+        val ex1 = resp.first { it.id == "e1" }
+        val ex2 = resp.first { it.id == "e2" }
+        val ex3 = resp.first { it.id == "e3" }
+
+        ex1.name shouldBe "Squats"
+        ex2.name shouldBe "Bench press"
+        ex3.name shouldBe "Overhead press"
     }
 
     @Test
@@ -172,9 +175,9 @@ class WorkoutTests : BaseTest() {
                     ),
                     ExerciseRecordEntity(
                         exerciseId = "e1",
-                        repetitions = 5,
-                        weight = WeightEntity(kg = 50f),
-                        rir = RepetitionsInReserveEntity(min = 2, max = 3)
+                        repetitions = 6,
+                        weight = WeightEntity(kg = 60f),
+                        rir = RepetitionsInReserveEntity(min = 1, max = 2)
                     )
                 ),
                 date = date1,
@@ -184,40 +187,71 @@ class WorkoutTests : BaseTest() {
                 id = "w2",
                 exercises = mutableListOf(
                     ExerciseRecordEntity(
-                        exerciseId = "e1",
-                        repetitions = 6,
-                        weight = WeightEntity(kg = 52.5f),
-                        rir = RepetitionsInReserveEntity(min = 2, max = 3)
-                    ),
-                    ExerciseRecordEntity(
-                        exerciseId = "e1",
+                        exerciseId = "e2",
                         repetitions = 5,
                         weight = WeightEntity(kg = 52.5f),
                         rir = RepetitionsInReserveEntity(min = 1, max = 2)
                     )
                 ),
                 date = date2,
-                mesocycle = "meso 1"
+                mesocycle = "meso 2"
             )
         )).collectList().block()
 
         // WHEN
         val res = webTestClient.getAuthed(userSetup.accessToken)
-            .uri {
-                it.path("/api/stats/exercises/{id}")
-                    .build(mapOf("id" to "e1"))
-            }
+            .uri("/api/workouts")
             .exchange()
 
         // THEN
         res.expectStatus().is2xxSuccessful
 
-        val resp = res.expectBody(StatsGetForExerciseRespDto::class.java).returnResult().responseBody!!
-        resp.volumeProgress.size shouldBe 2
-        resp.volumeProgress[0].date shouldBe date1
-        resp.volumeProgress[0].volume shouldBe 5f * 50 + 5 * 50
-        resp.volumeProgress[1].date shouldBe date2
-        resp.volumeProgress[1].volume shouldBe 6f * 52.5 + 5 * 52.5
+        val resp = res.expectBody(object : ParameterizedTypeReference<List<WorkoutDto>>() {}).returnResult().responseBody!!
+        resp.size shouldBe 2
+        val w1 = resp.first { it.id == "w1" }
+
+        w1.mesocycle shouldBe "meso 1"
+        w1.exercises.size shouldBe 2
+        w1.exercises[0].exerciseId shouldBe "e1"
+        w1.exercises[0].repetitions shouldBe 5
+        w1.exercises[0].weight.kg shouldBe 50
+        w1.exercises[0].rir!!.min shouldBe 2
+        w1.exercises[0].rir!!.max shouldBe 3
+        w1.exercises[1].exerciseId shouldBe "e1"
+        w1.exercises[1].repetitions shouldBe 6
+        w1.exercises[1].weight.kg shouldBe 60
+        w1.exercises[1].rir!!.min shouldBe 1
+        w1.exercises[1].rir!!.max shouldBe 2
+
+        val w2 = resp.first { it.id == "w2" }
+        w2.mesocycle shouldBe "meso 2"
+        w2.exercises.size shouldBe 1
+        w2.exercises[0].exerciseId shouldBe "e2"
+        w2.exercises[0].repetitions shouldBe 5
+        w2.exercises[0].weight.kg shouldBe 52.5
+        w2.exercises[0].rir!!.min shouldBe 1
+        w2.exercises[0].rir!!.max shouldBe 2
+    }
+
+    @Test
+    fun `User should be able to delete a workout`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(listOf(
+            DataHelper.WorkoutSetupRqDto(
+                id = "w1",
+                userId = "u1"
+            ),
+        )).collectList().block()
+
+        // WHEN
+        val res = webTestClient.deleteAuthed(userSetup.accessToken)
+            .uri("/api/workouts/w1")
+            .exchange()
+
+        // THEN
+        res.expectStatus().is2xxSuccessful
+        dataHelper.workoutRepository.findById("w1").block() shouldBe null
     }
 
 }

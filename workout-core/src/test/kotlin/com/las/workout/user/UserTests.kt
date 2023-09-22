@@ -5,10 +5,7 @@ import com.las.workout.jwt.service.AuthTokensService
 import com.las.workout.test.getAuthed
 import com.las.workout.user.api.AUTH_ACCESS_TOKEN_ID_PARAM_NAME
 import com.las.workout.user.api.AUTH_REFRESH_TOKEN_PARAM_NAME
-import com.las.workout.user.api.dto.UserAuthenticateRqDto
-import com.las.workout.user.api.dto.UserAuthenticateRespDto
-import com.las.workout.user.api.dto.UserDto
-import com.las.workout.user.api.dto.UserRegisterDto
+import com.las.workout.user.api.dto.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldHaveMinLength
@@ -92,12 +89,11 @@ class UserTests : BaseTest() {
 
         // WHEN
         val res = webTestClient.post()
-            .uri {
-                it.path("/api/auth/actions/refresh-tokens")
-                    .queryParam(AUTH_ACCESS_TOKEN_ID_PARAM_NAME, accessTokenId)
-                    .queryParam(AUTH_REFRESH_TOKEN_PARAM_NAME, refreshToken)
-                    .build()
-            }
+            .uri("/api/auth/actions/refresh-tokens")
+            .bodyValue(UserRefreshTokensRqDto(
+                accessTokenId = accessTokenId,
+                refreshToken = refreshToken
+            ))
             .exchange()
 
         // THEN

@@ -40,6 +40,12 @@ class WorkoutService {
     }
 
     @Transactional
+    fun deleteWorkout(id: String, userId: String): Mono<Void> {
+        return findWorkoutForUser(userId = userId, workoutId = id)
+            .flatMap { workoutRepository.deleteById(it.id) }
+    }
+
+    @Transactional
     fun createExercise(userId: String, name: String): Mono<ExerciseEntity> {
         log.debug("User {} create exercise {}", userId, name)
 
@@ -62,8 +68,8 @@ class WorkoutService {
         if (rq.weight.bodyWeight == true && rq.weight.kg != null)
             return Mono.error(IllegalArgumentException("Only one of bodyWeight or kg must be specified"))
 
-        return findWorkoutOrThrow(workoutId)
-            .zipWhenToPair(findExerciseOrThrow(rq.exerciseId))
+        return findWorkoutForUser(userId = userId, workoutId = workoutId)
+            .zipWhenToPair { findExerciseForUser(userId = userId, exerciseId = rq.exerciseId) }
             .flatMap { (workout, exercise) ->
                 workout.exercises.add(
                     ExerciseRecordEntity(
@@ -80,7 +86,7 @@ class WorkoutService {
                                 max = it.max,
                             )
                         },
-                        mioRepMatch = rq.mioRepMatch,
+                        myoRepMatch = rq.myoRepMatch,
                     )
                 )
 
@@ -88,14 +94,9 @@ class WorkoutService {
             }
     }
 
-    private fun findWorkoutOrThrow(workoutId: String) : Mono<WorkoutEntity> {
-        return workoutRepository.findById(workoutId)
+    private fun findWorkoutForUser(userId: String, workoutId: String) : Mono<WorkoutEntity> {
+        return workoutRepository.findByIdAndUserId(workoutId, userId)
             .switchIfEmpty(Mono.error(EntityNotFoundException("Workout $workoutId does not exist")))
-    }
-
-    fun findExerciseOrThrow(exerciseId: String) : Mono<ExerciseEntity> {
-        return exerciseRepository.findById(exerciseId)
-            .switchIfEmpty(Mono.error(EntityNotFoundException("Exercise $exerciseId does not exist")))
     }
 
     fun findExerciseForUser(userId: String, exerciseId: String) : Mono<ExerciseEntity> {
@@ -107,8 +108,11 @@ class WorkoutService {
         return exerciseRepository.findAllByUserId(userId)
     }
 
-    fun getWorkouts(userId: String): Flux<WorkoutEntity> {
-        return workoutRepository.findAllByUserId(userId)
+    fun getWorkouts(userId: String, order: Boolean = true): Flux<WorkoutEntity> {
+        return if (order)
+            workoutRepository.findAllByUserIdOrderByDateDesc(userId)
+        else
+            workoutRepository.findAllByUserId(userId)
     }
 
     fun findAllByExercise(exerciseId: String): Flux<WorkoutEntity> {

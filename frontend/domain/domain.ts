@@ -11,7 +11,7 @@ export interface ExerciseRecord {
     weight: Weight
     warmup?: boolean
     rir?: RepsInReserve
-    mioRepMatch?: boolean
+    myoRepMatch?: boolean
 }
 
 export interface Weight {
@@ -22,4 +22,14 @@ export interface Weight {
 export interface RepsInReserve {
     min: number
     max?: number
+}
+
+export interface Exercise {
+    id: string
+    name: string
+}
+
+export interface WorkoutVolume {
+    date: Date
+    volume: number
 }

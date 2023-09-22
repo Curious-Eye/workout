@@ -1,54 +1,81 @@
-import {useUserStore} from "~/store";
-import BaseRequestService from "~/services/baseRequestService";
+import {useMainStore} from "~/store";
 
-export const useWorkoutApi = () => {
-    const serverHost = useRuntimeConfig().public.serverHost
-    const at = useUserStore().user.accessToken
-    const rt = useUserStore().user.refreshToken
-
+/**
+ *
+ * @param app {NuxtApp}
+ */
+export const useWorkoutApi = (app = undefined) => {
     return {
         /**
-         *
-         * @return {Promise<[Workout]>}
+         * Get all workouts
+         * @param redirectToLoginOnAuthFail {boolean}
+         * @return {Promise<{data?: [Workout], error?: *}>}
          */
-        async getWorkouts() {
+        async getWorkouts(redirectToLoginOnAuthFail = true) {
             console.log('Try getWorkouts')
-            const {data, error, newTokens} =
-                await BaseRequestService.getAuthed('/api/workouts', serverHost, at, rt)
+            const {data, error} = await useApi(app).getAuthed('/api/workouts', redirectToLoginOnAuthFail)
 
-            if (!!newTokens)
-                useUserStore().setUserTokens(newTokens.accessToken, newTokens.refreshToken)
+            if (!!error)
+                return {error}
 
-            if (error) {
-                console.log('Error from getWorkouts: ')
-                console.log(JSON.stringify(error))
-                throw new Error(error)
-            }
+            if (process.client)
+                useMainStore().setWorkouts(data)
+            else
+                app.runWithContext(() => useMainStore().setWorkouts(data))
 
-            return data
+            return {data}
         },
         /**
          * Record a workout
          * @param mesocycle {string}
          * @param date {Date}
-         * @return {Promise<Workout>}
+         * @return {Promise<{data?: Workout, error?: *}>}
          */
         async recordWorkout(mesocycle, date) {
             console.log('Try recordWorkout. mesocycle=' + mesocycle + ', date=' + date.toString())
+            const {data, error} = await useApi(app).postAuthed('/api/workouts', {mesocycle, date})
 
-            const {data, error, newTokens} =
-                await BaseRequestService.postAuthed('/api/workouts', {mesocycle, date}, serverHost, at, rt)
+            if (!!error)
+                return {error}
 
-            if (!!newTokens)
-                useUserStore().setUserTokens(newTokens.accessToken, newTokens.refreshToken)
+            useMainStore().addWorkout(data)
 
-            if (error) {
-                console.log('Error from recordWorkout: ')
-                console.log(JSON.stringify(error))
-                throw new Error(error)
-            }
+            return {data}
+        },
+        /**
+         * Record a workout
+         * @param workoutId {string}
+         * @param exercise {ExerciseRecord}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async recordExercise(workoutId, exercise) {
+            console.log(`Try recordExercise. exercise=${JSON.stringify(exercise)}`)
+            const {data: {workout}, error} = await useApi(app).postAuthed(`/api/workouts/${workoutId}/exercises`, exercise)
 
-            return data
-        }
+            if (!!error)
+                return {error}
+
+            useMainStore().lastExerciseRecordInput = exercise
+
+            useMainStore().setWorkout(workout)
+
+            return {data: workout}
+        },
+        /**
+         * Delete a workout
+         * @param workoutId {string}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async deleteWorkout(workoutId) {
+            console.log(`Try deleteWorkout. workoutId=${workoutId}`)
+            const {error} = await useApi(app).deleteAuthed(`/api/workouts/${workoutId}`)
+
+            if (!!error)
+                return {error}
+
+            useMainStore().deleteWorkout(workoutId)
+
+            return Promise.resolve()
+        },
     }
 }
