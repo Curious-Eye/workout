@@ -15,7 +15,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const {data} = await useAsyncData('stats_all', () => useStatsApi().getStatsForAllExercises())
+const {data} = await useAsyncData('stats_all', (ctx) => useStatsApi(ctx).getStatsForAllExercises())
 
 const stats = data.value?.data ? data.value?.data.stats : new Map<string, {volume: WorkoutVolume[]}>()
 </script>

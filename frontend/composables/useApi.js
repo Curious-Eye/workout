@@ -5,7 +5,7 @@ import BaseRequestService from "~/services/baseRequestService";
  * @param app {NuxtApp}
  */
 export const useApi = (app) => {
-    const serverHost = useRuntimeConfig().public.serverHost
+    const serverHost = process.server ? useRuntimeConfig().public.serverHost : ''
     const at = useState('accessToken', () => useCookie('accessToken').value)
     const rt = useState('refreshToken', () => useCookie('refreshToken').value)
     if (!!app)
@@ -40,6 +40,9 @@ export const useApi = (app) => {
                 if (error.status === 401 && redirectToLoginOnAuthFail)
                     await app.runWithContext(() => navigateTo('/login'))
 
+                if (error.status === 502)
+                    await app.runWithContext(() => navigateTo('/server-offline'))
+
                 return {error}
             }
 
@@ -58,6 +61,10 @@ export const useApi = (app) => {
             if (error) {
                 console.log(`Error from useApi::postAnonymous(${path},${body}): `)
                 console.log(error)
+
+                if (error.status === 502)
+                    await app.runWithContext(() => navigateTo('/server-offline'))
+
                 return {error}
             }
 
@@ -93,6 +100,9 @@ export const useApi = (app) => {
                 if (error.status === 401 && redirectToLoginOnAuthFail)
                     await app.runWithContext(() => navigateTo('/login'))
 
+                if (error.status === 502)
+                    await app.runWithContext(() => navigateTo('/server-offline'))
+
                 return {error}
             }
 
@@ -127,6 +137,9 @@ export const useApi = (app) => {
 
                 if (error.status === 401 && redirectToLoginOnAuthFail)
                     await app.runWithContext(() => navigateTo('/login'))
+
+                if (error.status === 502)
+                    await app.runWithContext(() => navigateTo('/server-offline'))
 
                 return {error}
             }

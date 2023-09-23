@@ -1,4 +1,7 @@
 export const useStatsApi = (app) => {
+    if (!app)
+        app = useNuxtApp()
+
     return {
         /**
          * Get stats for an exercise
