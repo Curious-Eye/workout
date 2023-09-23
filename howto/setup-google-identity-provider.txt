@@ -1,1 +1,5 @@
 https://github.com/google-github-actions/auth
+
+// https://stackoverflow.com/questions/75573270/github-action-doesnt-work-with-gcp-403-permission-iam-serviceaccounts-getacc
+Don't forget to do this:
+gcloud iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT@${PROJECT_ID}.iam.gserviceaccount.com" --project="${PROJECT_ID}" --role="roles/iam.serviceAccountTokenCreator" --member=serviceAccount:$SERVICE_ACCOUNT@${PROJECT_ID}.iam.gserviceaccount.com
