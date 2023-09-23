@@ -20,3 +20,4 @@ spring:
     mongodb:
       uri: mongodb://mongo1:27017/workout?replicaSet=dev-rs0
       database: workout
+      
