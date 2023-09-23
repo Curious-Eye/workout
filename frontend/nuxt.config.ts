@@ -11,7 +11,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
     '@pinia/nuxt',
-    '@pinia-plugin-persistedstate/nuxt'
+    '@pinia-plugin-persistedstate/nuxt',
+    '@nuxtjs/tailwindcss'
   ],
   runtimeConfig: {
     // The private keys which are only available within server-side
@@ -20,5 +21,5 @@ export default defineNuxtConfig({
     public: {
       serverHost: ''
     }
-  }
+  },
 })

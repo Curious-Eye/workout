@@ -2,7 +2,7 @@
   <div class="d-flex flex-column">
     <div class="pb-5">
       <v-toolbar color="indigo" dark fixed app>
-        <v-toolbar-title>Workouts</v-toolbar-title>
+        <v-toolbar-title>LAS Workouts</v-toolbar-title>
         <v-btn icon @click="navigateTo('/workouts')" v-if="useMainStore().authenticated">
           <v-icon>mdi-calendar</v-icon>
         </v-btn>
@@ -14,7 +14,9 @@
         </v-btn>
       </v-toolbar>
     </div>
-    <slot />
+    <v-container fluid>
+      <slot />
+    </v-container>
   </div>
 </template>
 

@@ -1,27 +1,60 @@
 <template>
   <div>
-    <div class="d-flex flex-column" style="min-width: 30%">
-<!--      <div class="pb-5">-->
-<!--        <v-btn @click="reloadWorkouts">Refresh</v-btn>-->
-<!--      </div>-->
-      <div class="pb-5">
-        <v-btn @click="showRecordWorkoutDialog = true" variant="outlined">Record</v-btn>
-      </div>
-      <div class="d-flex" style="height: 600px">
-        <v-virtual-scroll :items="useMainStore().workouts">
-          <template v-slot:default="{ item }">
-            <WorkoutComponent class="mb-5" :workout="item"/>
-          </template>
-        </v-virtual-scroll>
-      </div>
-    </div>
+<!--    <v-card-->
+<!--        class="mx-auto"-->
+<!--        min-width="30%"-->
+<!--    >-->
+<!--      <v-card-item class="bg-indigo">-->
+<!--        <v-card-title>-->
+<!--          Workout record-->
+<!--        </v-card-title>-->
+
+<!--        <template v-slot:append>-->
+<!--          <v-btn-->
+<!--              color="white"-->
+<!--              icon="mdi-plus"-->
+<!--              size="small"-->
+<!--              @click="showRecordWorkoutDialog = true"-->
+<!--          ></v-btn>-->
+<!--        </template>-->
+<!--      </v-card-item>-->
+
+<!--      <v-card-text class="pt-4">-->
+<!--      </v-card-text>-->
+<!--    </v-card>-->
+
+    <v-virtual-scroll
+        :items="useMainStore().workouts"
+        height="100%"
+    >
+      <template v-slot:default="{ item }">
+        <v-list-item>
+          <WorkoutComponent class="mb-5" :workout="item"/>
+        </v-list-item>
+      </template>
+    </v-virtual-scroll>
+    <v-fab-transition>
+      <v-btn
+          class="add-workout-btn"
+          color="white"
+          icon="mdi-plus"
+          size="x-large"
+          @click="showRecordWorkoutDialog = true"
+          dark
+          bottom
+          right
+          fab
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+    </v-fab-transition>
 
     <v-dialog
         v-model="showRecordWorkoutDialog"
         min-width="300px"
         max-width="390px"
     >
-      <v-card >
+      <v-card>
         <div >
           <v-card-text>
             <div class="d-flex flex-column">
@@ -54,7 +87,7 @@
 <script setup lang="ts">
 import {useMainStore} from "~/store";
 import {useAsyncData} from "#app";
-import { VDatePicker } from 'vuetify/labs/VDatePicker'
+import {VDatePicker} from 'vuetify/labs/VDatePicker'
 
 definePageMeta({
   middleware: 'auth'
@@ -87,5 +120,10 @@ async function recordWorkout() {
 </script>
 
 <style scoped>
-
+.add-workout-btn {
+  bottom: 0;
+  right: 0;
+  position: fixed;
+  margin: 0 16px 16px 0;
+}
 </style>

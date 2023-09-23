@@ -1,22 +1,27 @@
 <template>
   <div>
-    <v-container fluid>
-      <sparklines
-          :value="stats.volume.map(value => value.volume)"
-          :smooth="false"
-          :padding="0"
-          :line-width="2"
-          :stroke-linecap="'round'"
-          auto-draw
-      ></sparklines>
-
-    </v-container>
+    <div>
+      {{ useMainStore().getExercise(exerciseId).name }}
+    </div>
+    <div>
+      <ClientOnly>
+        <apexchart
+            height="400"
+            width="100%"
+            type="bar"
+            :options="options"
+            :series="series"
+        ></apexchart>
+      </ClientOnly>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import {WorkoutVolume} from "~/domain/domain";
 import {PropType} from "@vue/runtime-core";
+import {useMainStore} from "~/store";
+import utilsMain from "~/services/utilsMain";
 
 const props = defineProps({
   stats: {
@@ -28,6 +33,21 @@ const props = defineProps({
     required: true
   }
 })
+
+await useExerciseApi().getExercises()
+const name = useMainStore().getExercise(props.exerciseId).name
+const series = [{
+  name,
+  data: props.stats?.volume.map(v => v.volume)
+}]
+const options = {
+  chart: {
+    id: `volume-chart-${props.exerciseId}`
+  },
+  xaxis: {
+    categories: props.stats?.volume.map(v => utilsMain.getWorkoutDisplayDate(v.date))
+  }
+}
 </script>
 
 <style scoped>

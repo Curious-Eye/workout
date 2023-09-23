@@ -1,5 +1,3 @@
-import {useMainStore} from "~/store";
-
 export const useStatsApi = (app) => {
     return {
         /**
@@ -29,6 +27,10 @@ export const useStatsApi = (app) => {
                 return {error}
 
             data.stats = new Map(Object.entries(data.stats))
+
+            data.stats.forEach((value, key) => {
+                value.volume.forEach(v => v.date = new Date(v.date))
+            })
 
             return {data}
         },

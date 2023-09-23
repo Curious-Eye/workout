@@ -1,6 +1,9 @@
 import {useMainStore} from "~/store";
+import {useNuxtApp} from "#app";
 
 export const useExerciseApi = (app) => {
+    if (!app)
+        app = useNuxtApp()
     return {
         /**
          * Get all exercises

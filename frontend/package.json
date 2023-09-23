@@ -11,14 +11,18 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@pinia-plugin-persistedstate/nuxt": "^1.1.1",
-    "nuxt": "^3.7.3"
+    "nuxt": "^3.7.3",
+    "postcss-custom-properties": "^13.3.1"
   },
   "packageManager": "yarn@3.6.3",
   "dependencies": {
     "@mdi/font": "^7.2.96",
+    "@nuxtjs/tailwindcss": "^6.8.0",
     "@pinia/nuxt": "^0.4.11",
+    "apexcharts": "^3.42.0",
     "pinia": "^2.1.6",
     "sass": "^1.67.0",
+    "vue3-apexcharts": "^1.4.4",
     "vuetify": "next"
   }
 }

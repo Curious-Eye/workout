@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card
-        :subtitle="getWorkoutDisplayDate()"
+        :subtitle="utilsMain.getWorkoutDisplayDate(workout.date)"
         variant="tonal"
     >
       <template v-slot:title>
@@ -120,6 +120,7 @@
 import {useMainStore} from "~/store";
 import {ExerciseRecord, RepsInReserve, Workout} from "~/domain/domain";
 import {PropType} from "@vue/runtime-core";
+import utilsMain from "~/services/utilsMain";
 
 const props = defineProps({
   workout: {
@@ -171,20 +172,6 @@ function setExerciseInputRir(rir: RepsInReserve) {
     else
       exerciseInput.value.rir.max = rir.max
   }
-}
-
-function getWorkoutDisplayDate(): string {
-  const monthNames = [
-    'January', 'February', 'March', 'April',
-    'May', 'June', 'July', 'August',
-    'September', 'October', 'November', 'December'
-  ];
-
-  const year = props.workout.date.getFullYear()
-  const month = monthNames[props.workout.date.getMonth()]
-  const day = props.workout.date.getDate().toString().padStart(2, '0')
-
-  return `${year} ${month} ${day}`
 }
 
 async function deleteWorkout() {
