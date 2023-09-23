@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>
+    <div class="pb-5">
       {{ useMainStore().getExercise(exerciseId).name }}
     </div>
     <div>
@@ -45,7 +45,21 @@ const options = {
     id: `volume-chart-${props.exerciseId}`
   },
   xaxis: {
+    title: {
+      text: 'Date',
+      style: {
+        fontSize: '14px'
+      }
+    },
     categories: props.stats?.volume.map(v => utilsMain.getWorkoutDisplayDate(v.date))
+  },
+  yaxis: {
+    title: {
+      text: 'Volume',
+      style: {
+        fontSize: '14px'
+      }
+    },
   }
 }
 </script>
