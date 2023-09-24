@@ -55,7 +55,7 @@
         max-width="390px"
     >
       <v-card>
-        <div >
+        <div>
           <v-card-text>
             <div class="d-flex flex-column">
               <v-text-field
