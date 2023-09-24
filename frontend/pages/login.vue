@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-sheet class="bg-deep-purple pa-12 w-50" rounded>
+    <v-sheet class="bg-teal pa-12 w-50" rounded>
       <v-card class="mx-auto px-6 py-8">
         <v-form
             v-model="form"
@@ -34,7 +34,7 @@
               :disabled="!form"
               :loading="loading"
               block
-              color="success"
+              color="teal-darken-1"
               size="large"
               type="submit"
               variant="elevated"
