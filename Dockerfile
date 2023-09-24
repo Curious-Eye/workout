@@ -30,4 +30,6 @@ RUN gradle :workout-core:nativeCompile --parallel --no-daemon
 FROM debian:bookworm-slim
 
 COPY --from=build /app/workout-core/build/native/nativeCompile/workout-core /app/
+
+EXPOSE 8080
 ENTRYPOINT ["/app/workout-core"]
