@@ -2,7 +2,8 @@
   <div>
     <v-card
         :subtitle="utilsMain.getWorkoutDisplayDate(workout.date)"
-        variant="tonal"
+        color="teal"
+        variant="flat"
     >
       <template v-slot:title>
         <div class="d-flex justify-space-between">

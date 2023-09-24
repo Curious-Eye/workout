@@ -44,6 +44,7 @@ const options = {
   chart: {
     id: `volume-chart-${props.exerciseId}`
   },
+  colors: ['#00796B'], // teal
   xaxis: {
     title: {
       text: 'Date',

@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column">
     <div class="pb-5">
-      <v-toolbar color="indigo" dark fixed app>
+      <v-toolbar color="teal-darken-2" dark fixed app>
         <v-toolbar-title>LAS Workouts</v-toolbar-title>
         <v-btn icon @click="navigateTo('/workouts')" v-if="useMainStore().authenticated">
           <v-icon>mdi-calendar</v-icon>
