@@ -37,3 +37,4 @@ out/
 .vscode/
 /devops/persistence/mongo/
 /frontend/.yarn/cache
+!/frontend/node_modules/.yarn-state.yml
