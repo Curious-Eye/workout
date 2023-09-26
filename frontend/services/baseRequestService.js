@@ -197,7 +197,9 @@ async function refreshTokens(baseUri, accessToken, refreshToken) {
 async function fetchWrapped(path, opts) {
     return await $fetch(path, opts)
         .then(data => ({data}))
-        .catch(error => ({error: {status: error.response.status}}))
+        .catch(error => {
+            return {error: {status: error.response.status, body: error.data}}
+        })
 }
 
 /**

@@ -40,22 +40,23 @@
                 type="submit"
                 variant="elevated"
             >
-              Sign In
+              Sign up
             </v-btn>
 
             <div class="pt-5 text-red" v-if="errorFromApi">
               {{errorFromApi}}
             </div>
           </v-form>
+
           <div class="pt-5 d-flex align-self-end align-center">
-            Don't have an account?
+            Already have an account?
             <v-btn
                 class="text-subtitle-1"
                 variant="text"
                 color="teal-darken-3"
-                @click="navigateTo('/register')"
+                @click="navigateTo('/login')"
             >
-              Sign up
+              Sign in
             </v-btn>
           </div>
         </div>
@@ -76,49 +77,36 @@ const loading = ref(false)
 const errorFromApi = ref('')
 
 const usernameRules = [
-    (value: any) => {
-      if (!value) return 'Username is required'
+  (value: any) => {
+    if (!value) return 'Username is required'
 
-      if (value.length < 3)
-        return 'Username should be at least 3 characters long'
+    if (value.length < 3)
+      return 'Username should be at least 3 characters long'
 
-      return true
-    }
+    return true
+  }
 ]
 
 const passwordRules = [
-    (value: any) => {
-      if (!value) return 'Password is required'
+  (value: any) => {
+    if (!value) return 'Password is required'
 
-      if (value.length < 4)
-        return 'Password should be at least 4 characters long'
+    if (value.length < 4)
+      return 'Password should be at least 4 characters long'
 
-      return true
-    }
-]
-
-const getRedirectUri = function () {
-  let redirect = '/'
-  if (!!route.query.redirectUri) {
-    if (route.query.redirectUri instanceof String)
-      redirect = route.query.redirectUri as string
-    else {
-      const t = route.query.redirectUri[0]
-      if (t != null) redirect = t
-    }
+    return true
   }
-  return decodeURI(redirect)
-}
+]
 
 const onSubmit = async function () {
   if (!form.value) return
 
   loading.value = true
   errorFromApi.value = ''
-  const {data, error} = await useAuthApi().authenticate(username.value, password.value);
+  const {data, error} = await useAuthApi().register(username.value, password.value);
 
   if (data)
-    navigateTo(getRedirectUri())
+    navigateTo('/login')
 
   if (error)
     errorFromApi.value = error.body.msg
