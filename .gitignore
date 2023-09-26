@@ -36,4 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 /devops/persistence/mongo/
-/frontend/.yarn/
+/frontend/.yarn/cache
