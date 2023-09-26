@@ -7,7 +7,7 @@ import com.las.workout.core.data.entity.*
 import com.las.workout.core.data.repository.ExerciseRepository
 import com.las.workout.core.data.repository.WorkoutRepository
 import com.las.workout.exception.EntityNotFoundException
-import com.las.workout.exception.IllegalArgumentException
+import com.las.workout.exception.IllegalArgumentsException
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,10 +63,10 @@ class WorkoutService {
         log.debug("User {} record workout {} exercise {}", userId, workoutId, rq)
 
         if (rq.weight.bodyWeight != true && rq.weight.kg == null)
-            return Mono.error(IllegalArgumentException("One of bodyWeight or kg must be specified"))
+            return Mono.error(IllegalArgumentsException("One of bodyWeight or kg must be specified"))
 
         if (rq.weight.bodyWeight == true && rq.weight.kg != null)
-            return Mono.error(IllegalArgumentException("Only one of bodyWeight or kg must be specified"))
+            return Mono.error(IllegalArgumentsException("Only one of bodyWeight or kg must be specified"))
 
         return findWorkoutForUser(userId = userId, workoutId = workoutId)
             .zipWhenToPair { findExerciseForUser(userId = userId, exerciseId = rq.exerciseId) }

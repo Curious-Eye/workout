@@ -2,8 +2,8 @@ package com.las.workout.exception
 
 import org.springframework.http.HttpStatus
 
-class IllegalArgumentException(msg: String) : BaseHttpException(
+class IllegalArgumentsException(msg: String) : BaseHttpException(
     msg = msg,
-    type = "illegal_argument_exception",
+    type = "illegal_arguments_exception",
     status = HttpStatus.BAD_REQUEST
 )

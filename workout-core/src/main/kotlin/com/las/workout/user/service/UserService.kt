@@ -1,5 +1,6 @@
 package com.las.workout.user.service
 
+import com.las.workout.exception.IllegalArgumentsException
 import com.las.workout.exception.UnauthorizedException
 import com.las.workout.jwt.service.AuthTokensService
 import com.las.workout.user.api.dto.UserAuthenticateRespDto
@@ -29,10 +30,10 @@ class UserService {
         log.debug("Register new user. Username={}", username)
 
         if (username.length < 3)
-            return Mono.error(IllegalArgumentException("Username should be at least 3 characters long"))
+            return Mono.error(IllegalArgumentsException("Username should be at least 3 characters long"))
 
         if (password.length < 4)
-            return Mono.error(IllegalArgumentException("Password should be at least 4 characters long"))
+            return Mono.error(IllegalArgumentsException("Password should be at least 4 characters long"))
 
         return userRepository.save(
             UserEntity(
