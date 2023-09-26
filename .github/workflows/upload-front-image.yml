@@ -10,12 +10,13 @@
 #
 # For more support on how to run the workflow, please visit https://github.com/google-github-actions/setup-gcloud/tree/master/example-workflows/gke-kustomize
 
-name: Build and Deploy to GKE
+name: Build Frontend image and upload it to Google Artifact Registry
 
 on:
-  workflow_run:
-     workflows: ["Core tests"]
-     types: [completed] #requested
+  push:
+    branches: [ "master" ]
+    paths:
+      - frontend/**
 
 env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
@@ -24,7 +25,7 @@ env:
 #  GKE_ZONE: ${{ secrets.GKE_ZONE }}
 #  DEPLOYMENT_NAME: ${{ secrets.DEPLOYMENT_NAME }}
   REPOSITORY: ${{ secrets.REPOSITORY }}
-  IMAGE: ${{ secrets.IMAGE }}
+  IMAGE: ${{ secrets.IMAGE_FRONTEND }}
   WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
   SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
 
@@ -70,7 +71,7 @@ jobs:
           --tag "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:latest" \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" \
-          .
+          ./frontend
     # Push the Docker image to Google Artifact Registry
     - name: Publish
       run: |-
