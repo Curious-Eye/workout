@@ -3,7 +3,7 @@ server {
     server_name example.chat.dev;
 
     location / {
-        proxy_pass http://front-end-1-service;
+        proxy_pass http://frontend-1-service;
 
         proxy_http_version 1.1;
         proxy_set_header   Host $host;
@@ -17,7 +17,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://core-svc-1-service;
+        proxy_pass http://workout-1-service;
 
         proxy_http_version 1.1;
         proxy_set_header   Host $host;
@@ -31,7 +31,7 @@ server {
     }
 
     location /api/rs {
-        proxy_pass http://core-svc-1-service;
+        proxy_pass http://workout-1-service;
 
         proxy_http_version 1.1;
         proxy_set_header   Host $host;
