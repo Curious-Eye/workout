@@ -1,7 +1,9 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
-    id 'org.springframework.boot' version '3.1.3'
-    id 'io.spring.dependency-management' version '1.1.3'
-    id 'org.graalvm.buildtools.native' version '0.9.24'
+    id 'org.springframework.boot' apply false
+    id 'io.spring.dependency-management'
+    id 'org.graalvm.buildtools.native' apply false
     id 'org.jetbrains.kotlin.jvm' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.8.22'
 }
@@ -17,14 +19,13 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("io.projectreactor:reactor-core")
 }
 
-bootJar {
-    enabled = false
-}
-
-jar {
-    enabled = true
-}
