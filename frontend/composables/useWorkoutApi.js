@@ -50,16 +50,16 @@ export const useWorkoutApi = (app = undefined) => {
          */
         async recordExercise(workoutId, exercise) {
             console.log(`Try recordExercise. exercise=${JSON.stringify(exercise)}`)
-            const {data: {workout}, error} = await useApi(app).postAuthed(`/api/workouts/${workoutId}/exercises`, exercise)
+            const {data, error} = await useApi(app).postAuthed(`/api/workouts/${workoutId}/exercises`, exercise)
 
             if (!!error)
                 return {error}
 
             useMainStore().lastExerciseRecordInput = exercise
 
-            useMainStore().setWorkout(workout)
+            useMainStore().setWorkout(data.workout)
 
-            return {data: workout}
+            return {data: data.workout}
         },
         /**
          * Delete a workout
