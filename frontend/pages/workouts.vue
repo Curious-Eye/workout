@@ -26,12 +26,8 @@
       </v-btn>
     </v-fab-transition>
 
-    <v-dialog
-        v-model="showRecordWorkoutDialog"
-        min-width="300px"
-        max-width="390px"
-    >
-      <v-card>
+    <v-dialog v-model="showRecordWorkoutDialog" width="auto">
+      <v-card max-width="400">
         <div>
           <v-card-text>
             <div class="d-flex flex-column">
@@ -42,13 +38,18 @@
               <div class="pb-5 text-h6">
                 Select date:
               </div>
-              <v-date-picker width="200" v-model="workoutInput.date"  hide-actions title="">
-                <template v-slot:header="{header}">
-                  <div class="ml-6 mt-5 text-h6">
-                    {{header}}
-                  </div>
+
+              <v-virtual-scroll :items="[1]">
+                <template v-slot:default="{ item }">
+                  <v-date-picker v-model="workoutInput.date" color="teal-darken-1" hide-actions show-adjacent-months title="">
+                    <template v-slot:header="{header}">
+                      <div class="ml-6 text-h6">
+                        {{header}}
+                      </div>
+                    </template>
+                  </v-date-picker>
                 </template>
-              </v-date-picker>
+              </v-virtual-scroll>
             </div>
           </v-card-text>
         </div>
