@@ -3,14 +3,14 @@
     <div class="mr-5">
       {{ exercise.name }}
     </div>
-    <div class="d-flex flex-wrap">
-      <div class="mr-5 d-flex" v-if="exerciseRecord.elevation?.cm">
+    <div class="d-flex flex-wrap align-center">
+      <div class="d-flex recordField" v-if="exerciseRecord.elevation?.cm">
         <v-chip>
           <v-icon icon="mdi-chevron-up"/>
           {{ exerciseRecord.elevation.cm }}
         </v-chip>
       </div>
-      <div class="mr-5 d-flex">
+      <div class="d-flex recordField">
         <v-chip>
           <div v-if="exerciseRecord.weight.bodyWeight">
             <v-icon icon="mdi-human-handsdown"/>
@@ -24,12 +24,12 @@
           </div>
         </v-chip>
       </div>
-      <div v-if="exerciseRecord.warmup">
+      <div class="recordField" v-if="exerciseRecord.warmup">
         <v-chip>
           w-up
         </v-chip>
       </div>
-      <div class="d-flex pr-5" v-if="exerciseRecord.rir">
+      <div class="d-flex recordField" v-if="exerciseRecord.rir">
         <v-chip>
           <v-icon icon="mdi-plus"/>
           {{ exerciseRecord.rir.min }}&nbsp;
@@ -38,7 +38,7 @@
           </div>
         </v-chip>
       </div>
-      <div class="d-flex pr-5"
+      <div class="d-flex recordField"
            v-if="exerciseRecord.contraction?.eccentric?.minSeconds && exerciseRecord.contraction.eccentric.minSeconds > 0">
         <v-chip>
           <v-icon icon="mdi-waves-arrow-right" style="transform: rotate(90deg);"/>&nbsp;
@@ -48,7 +48,7 @@
           </div>
         </v-chip>
       </div>
-      <div class="d-flex"
+      <div class="d-flex recordField"
            v-if="exerciseRecord.contraction?.isometric && exerciseRecord.contraction.isometric.minSeconds >= 0">
         <v-chip>
           <v-icon icon="mdi-motion-pause"/>&nbsp;
@@ -58,7 +58,7 @@
           </div>
         </v-chip>
       </div>
-      <div v-if="exerciseRecord.myoRepMatch">
+      <div class="recordField" v-if="exerciseRecord.myoRepMatch">
         <v-chip>
           myo-match
         </v-chip>
@@ -84,5 +84,7 @@ const exercise = useMainStore().getExercise(props.exerciseRecord.exerciseId)
 </script>
 
 <style scoped>
-
+.recordField {
+  margin: 0.25rem;
+}
 </style>
