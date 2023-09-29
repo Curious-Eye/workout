@@ -1,7 +1,9 @@
 <template>
-  <NuxtLayout>
-    <NuxtPage style="margin: 0; display: flex; justify-content: center;" />
-  </NuxtLayout>
+  <div class="d-flex w-100 h-100">
+    <NuxtLayout>
+      <NuxtPage class="d-flex"/>
+    </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
