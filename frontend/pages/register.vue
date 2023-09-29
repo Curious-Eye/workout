@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-sheet class="bg-teal pa-12 w-50" rounded>
+    <v-sheet class="bg-teal pa-6" rounded>
       <v-card class="mx-auto px-6 py-8">
         <div class="d-flex flex-column">
           <v-form
