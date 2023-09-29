@@ -8,7 +8,7 @@
       <template v-slot:title>
         <div class="d-flex justify-space-between">
           <div>
-            {{getWorkoutMesocycle()}}
+            {{ getWorkoutMesocycle() }}
           </div>
           <div>
             <v-btn
@@ -25,35 +25,40 @@
             v-model="showDeleteWorkoutDialog"
             width="210px"
         >
-          <v-card >
+          <v-card>
             <v-card-text>
               Delete this workout?
             </v-card-text>
             <v-card-actions class="d-flex justify-space-between">
-                <v-btn color="red" @click="deleteWorkout">Yes</v-btn>
-                <v-btn variant="tonal" @click="showDeleteWorkoutDialog = false">No</v-btn>
+              <v-btn color="red" @click="deleteWorkout">Yes</v-btn>
+              <v-btn variant="tonal" @click="showDeleteWorkoutDialog = false">No</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </template>
 
       <template v-slot:text>
-        <div class="mb-2">
+        <div class="pb-2">
           Exercises:
         </div>
-        <div v-for="(item, index) in workout.exercises" :key="index">
-          <ExerciseRecordComponent :exercise-record="item"/>
+        <v-divider class="pb-2"/>
+        <div class="pb-2" v-for="(item, index) in workout.exercises" :key="index">
+          <div class="pb-2">
+            <ExerciseRecordComponent :exercise-record="item"/>
+          </div>
+          <v-divider/>
         </div>
 
-        <div class="mt-2">
-          <v-btn density="compact" size="medium" icon="mdi-plus" variant="text" @click="showRecordExerciseDialog = true"/>
+        <div class="pl-3">
+          <v-btn density="compact" size="medium" icon="mdi-plus" variant="text"
+                 @click="showRecordExerciseDialog = true"/>
         </div>
 
         <v-dialog
             v-model="showRecordExerciseDialog"
             width="500"
         >
-          <v-card >
+          <v-card>
             <v-card-text>
               <div class="d-flex flex-column">
                 <ExerciseSelectMenu v-model="exerciseInput.exerciseId"></ExerciseSelectMenu>
@@ -95,6 +100,56 @@
                       @update:model-value="value => setExerciseInputRir({max: value} as RepsInReserve)"
                   />
                 </div>
+                <div class="d-flex align-center">
+                  <div class="flex-none overflow-hidden">
+                    Eccentric (s):
+                  </div>
+                  <v-text-field
+                      class="ml-5"
+                      :model-value="exerciseInput.contraction?.eccentric?.minSeconds"
+                      label="min:"
+                      type="number"
+                      @update:model-value="value => setExerciseInputEccentric({minSeconds: value} as Eccentric)"
+                  />
+                  <v-text-field
+                      class="ml-5"
+                      :model-value="exerciseInput.contraction?.eccentric?.maxSeconds"
+                      label="max:"
+                      type="number"
+                      @update:model-value="value => setExerciseInputEccentric({maxSeconds: value} as Eccentric)"
+                  />
+                </div>
+                <div class="d-flex align-center">
+                  <div class="flex-none overflow-hidden">
+                    Isometric (s):
+                  </div>
+                  <v-text-field
+                      class="ml-5"
+                      :model-value="exerciseInput.contraction?.isometric?.minSeconds"
+                      label="min:"
+                      type="number"
+                      @update:model-value="value => setExerciseInputIsometric({minSeconds: value} as Isometric)"
+                  />
+                  <v-text-field
+                      class="ml-5"
+                      :model-value="exerciseInput.contraction?.isometric?.maxSeconds"
+                      label="max:"
+                      type="number"
+                      @update:model-value="value => setExerciseInputIsometric({maxSeconds: value} as Isometric)"
+                  />
+                </div>
+                <div class="d-flex align-center">
+                  <div class="flex-none overflow-hidden">
+                    Elevation (cm):
+                  </div>
+                  <v-text-field
+                      class="ml-5"
+                      :model-value="exerciseInput.elevation?.cm"
+                      label="centimeters:"
+                      type="number"
+                      @update:model-value="setElevation"
+                  />
+                </div>
                 <div class="d-flex align-center mb-5">
                   <v-checkbox-btn
                       style="min-width: 20%"
@@ -106,7 +161,7 @@
                       v-model="exerciseInput.myoRepMatch"
                       label="Myo rep match"
                   />
-                  <v-btn style="max-width: 20%" color="primary" @click="recordExercise">Add</v-btn>
+                  <v-btn style="max-width: 20%" color="teal-darken-1" @click="recordExercise">Add</v-btn>
                 </div>
               </div>
             </v-card-text>
@@ -119,7 +174,7 @@
 
 <script setup lang="ts">
 import {useMainStore} from "~/store";
-import {ExerciseRecord, RepsInReserve, Workout} from "~/domain/domain";
+import {Eccentric, ExerciseRecord, Isometric, RepsInReserve, Workout} from "~/domain/domain";
 import {PropType} from "@vue/runtime-core";
 import utilsMain from "~/services/utilsMain";
 
@@ -134,7 +189,11 @@ let exerciseInput = useState('exerciseInput', () => {
   if (!!useMainStore().lastExerciseRecordInput.exerciseId)
     return useMainStore().lastExerciseRecordInput
   else
-    return ({ exerciseId: '',  repetitions: 0, weight: {} }) as ExerciseRecord
+    return ({
+      exerciseId: '',
+      repetitions: 0,
+      weight: {},
+    }) as ExerciseRecord
 })
 let showRecordExerciseDialog = ref(false)
 let showDeleteWorkoutDialog = ref(false)
@@ -158,6 +217,21 @@ async function recordExercise() {
     if (val.rir?.min && val.rir?.min <= 0)
       val.rir = undefined
 
+    if (val.contraction?.eccentric && val.contraction.eccentric.minSeconds <= 0)
+      val.contraction.eccentric = undefined
+
+    if (val.contraction?.eccentric?.maxSeconds && val.contraction.eccentric.maxSeconds == 0)
+      val.contraction.eccentric.maxSeconds = undefined
+
+    if (val.contraction?.isometric && val.contraction.isometric.minSeconds < 0)
+      val.contraction.isometric = undefined
+
+    if (val.contraction?.isometric?.maxSeconds && val.contraction.isometric.maxSeconds == 0)
+      val.contraction.isometric.maxSeconds = undefined
+
+    if (val.elevation?.cm && val.elevation?.cm <= 0)
+      val.elevation = undefined
+
     await useWorkoutApi().recordExercise(props.workout.id, val)
     showRecordExerciseDialog.value = false
   }
@@ -173,6 +247,40 @@ function setExerciseInputRir(rir: RepsInReserve) {
     else
       exerciseInput.value.rir.max = rir.max
   }
+}
+
+function setExerciseInputEccentric(eccentric: Eccentric) {
+  if (!exerciseInput.value.contraction)
+    exerciseInput.value.contraction = {}
+
+  if (!exerciseInput.value.contraction.eccentric)
+    exerciseInput.value.contraction.eccentric = eccentric
+  else {
+    if (eccentric.minSeconds)
+      exerciseInput.value.contraction.eccentric.minSeconds = eccentric.minSeconds
+    else
+      exerciseInput.value.contraction.eccentric.maxSeconds = eccentric.maxSeconds
+  }
+}
+
+
+function setExerciseInputIsometric(isometric: Isometric) {
+  if (!exerciseInput.value.contraction)
+    exerciseInput.value.contraction = {}
+
+  if (!exerciseInput.value.contraction.isometric)
+    exerciseInput.value.contraction.isometric = isometric
+  else {
+    if (isometric.minSeconds)
+      exerciseInput.value.contraction.isometric.minSeconds = isometric.minSeconds
+    else
+      exerciseInput.value.contraction.isometric.maxSeconds = isometric.maxSeconds
+  }
+}
+
+function setElevation(elevation: number) {
+  if (!exerciseInput.value.elevation) exerciseInput.value.elevation = {cm: elevation}
+  else exerciseInput.value.elevation.cm = elevation
 }
 
 async function deleteWorkout() {

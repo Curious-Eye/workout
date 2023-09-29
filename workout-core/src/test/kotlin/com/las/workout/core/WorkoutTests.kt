@@ -99,6 +99,17 @@ class WorkoutTests : BaseTest() {
                     rir = RepetitionsInReserveDto(min = 2, max = 3),
                     warmup = null,
                     myoRepMatch = null,
+                    elevation = ElevationDto(5f),
+                    contraction = ContractionDto(
+                        isometric = IsometricDto(
+                            minSeconds = 1f,
+                            maxSeconds = 2f
+                        ),
+                        eccentric = EccentricDto(
+                            minSeconds = 3f,
+                            maxSeconds = 4f
+                        )
+                    )
                 )
             )
             .exchange()
@@ -116,6 +127,25 @@ class WorkoutTests : BaseTest() {
         exerciseDto.rir!!.min shouldBe 2
         exerciseDto.rir!!.max shouldBe 3
         exerciseDto.myoRepMatch shouldBe null
+        exerciseDto.contraction!!.isometric!!.minSeconds shouldBe 1f
+        exerciseDto.contraction!!.isometric!!.maxSeconds shouldBe 2f
+        exerciseDto.contraction!!.eccentric!!.minSeconds shouldBe 3f
+        exerciseDto.contraction!!.eccentric!!.maxSeconds shouldBe 4f
+
+        val workoutEntity = dataHelper.workoutRepository.findById(workoutSetup.id).block()!!
+        workoutEntity.exercises.size shouldBe 1
+        val exerciseEntity = workoutEntity.exercises[0]
+        exerciseEntity.exerciseId shouldBe "e1"
+        exerciseEntity.repetitions shouldBe 10
+        exerciseEntity.weight.kg shouldBe 50f
+        exerciseEntity.weight.bodyWeight shouldBe null
+        exerciseEntity.rir!!.min shouldBe 2
+        exerciseEntity.rir!!.max shouldBe 3
+        exerciseEntity.myoRepMatch shouldBe null
+        exerciseEntity.contraction!!.isometric!!.minSeconds shouldBe 1f
+        exerciseEntity.contraction!!.isometric!!.maxSeconds shouldBe 2f
+        exerciseEntity.contraction!!.eccentric!!.minSeconds shouldBe 3f
+        exerciseEntity.contraction!!.eccentric!!.maxSeconds shouldBe 4f
     }
 
     @Test

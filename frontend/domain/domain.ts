@@ -11,6 +11,8 @@ export interface ExerciseRecord {
     weight: Weight
     warmup?: boolean
     rir?: RepsInReserve
+    contraction?: Contraction
+    elevation?: Elevation
     myoRepMatch?: boolean
 }
 
@@ -22,6 +24,25 @@ export interface Weight {
 export interface RepsInReserve {
     min: number
     max?: number
+}
+
+export interface Contraction {
+    isometric?: Isometric
+    eccentric?: Eccentric
+}
+
+export interface Eccentric {
+    minSeconds: number
+    maxSeconds?: number
+}
+
+export interface Isometric {
+    minSeconds: number
+    maxSeconds?: number
+}
+
+export interface Elevation {
+    cm: number
 }
 
 export interface Exercise {

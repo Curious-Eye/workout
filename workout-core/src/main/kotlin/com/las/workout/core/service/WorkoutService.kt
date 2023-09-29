@@ -68,6 +68,42 @@ class WorkoutService {
         if (rq.weight.bodyWeight == true && rq.weight.kg != null)
             return Mono.error(IllegalArgumentsException("Only one of bodyWeight or kg must be specified"))
 
+        if (rq.rir?.min?.let { it < 0 } == true)
+            return Mono.error(IllegalArgumentsException("Min value for repetitions in reserve must not be negative"))
+
+        if (rq.rir?.max?.let { it < 0 } == true)
+            return Mono.error(IllegalArgumentsException("Max value for repetitions in reserve must not be negative"))
+
+        if (rq.rir?.min != null && rq.rir.max != null && rq.rir.min > rq.rir.max)
+            return Mono.error(IllegalArgumentsException("Max value for repetitions in reserve must not be smaller than min value"))
+
+        if (rq.elevation?.cm?.let { it <= 0 } == true)
+            return Mono.error(IllegalArgumentsException("Elevation must be positive number"))
+
+        if (rq.contraction?.eccentric != null && rq.contraction.eccentric.minSeconds < 0)
+            return Mono.error(IllegalArgumentsException("Eccentric contraction min seconds must not be negative"))
+
+        if (rq.contraction?.eccentric != null && rq.contraction.eccentric.maxSeconds?.let { it < 0 } == true)
+            return Mono.error(IllegalArgumentsException("Eccentric contraction max seconds must not be negative"))
+
+        if (rq.contraction?.eccentric?.minSeconds != null &&
+            rq.contraction.eccentric.maxSeconds != null &&
+            rq.contraction.eccentric.minSeconds > rq.contraction.eccentric.maxSeconds
+        )
+            return Mono.error(IllegalArgumentsException("Eccentric contraction max seconds must not be smaller than min seconds"))
+
+        if (rq.contraction?.isometric != null && rq.contraction.isometric.minSeconds < 0)
+            return Mono.error(IllegalArgumentsException("Isometric contraction min seconds must not be negative"))
+
+        if (rq.contraction?.isometric != null && rq.contraction.isometric.maxSeconds?.let { it < 0 } == true)
+            return Mono.error(IllegalArgumentsException("Isometric contraction max seconds must not be negative"))
+
+        if (rq.contraction?.isometric?.minSeconds != null &&
+            rq.contraction.isometric.maxSeconds != null &&
+            rq.contraction.isometric.minSeconds > rq.contraction.isometric.maxSeconds
+        )
+            return Mono.error(IllegalArgumentsException("Isometric contraction max seconds must not be smaller than min seconds"))
+
         return findWorkoutForUser(userId = userId, workoutId = workoutId)
             .zipWhenToPair { findExerciseForUser(userId = userId, exerciseId = rq.exerciseId) }
             .flatMap { (workout, exercise) ->
@@ -83,7 +119,24 @@ class WorkoutService {
                         rir = rq.rir?.let {
                             RepetitionsInReserveEntity(
                                 min = it.min,
-                                max = it.max,
+                                max = it.max?.let { max -> if (max > it.min) max else null },
+                            )
+                        },
+                        elevation = rq.elevation?.let { ElevationEntity(it.cm) },
+                        contraction = rq.contraction?.let {
+                            ContractionEntity(
+                                isometric = it.isometric?.let { iso ->
+                                    IsometricEntity(
+                                        minSeconds = iso.minSeconds,
+                                        maxSeconds = iso.maxSeconds?.let { max -> if (max > iso.minSeconds) max else null }
+                                    )
+                                },
+                                eccentric = it.eccentric?.let { ecc ->
+                                    EccentricEntity(
+                                        minSeconds = ecc.minSeconds,
+                                        maxSeconds = ecc.maxSeconds?.let { max -> if (max > ecc.minSeconds) max else null }
+                                    )
+                                }
                             )
                         },
                         myoRepMatch = rq.myoRepMatch,
@@ -94,12 +147,12 @@ class WorkoutService {
             }
     }
 
-    private fun findWorkoutForUser(userId: String, workoutId: String) : Mono<WorkoutEntity> {
+    private fun findWorkoutForUser(userId: String, workoutId: String): Mono<WorkoutEntity> {
         return workoutRepository.findByIdAndUserId(workoutId, userId)
             .switchIfEmpty(Mono.error(EntityNotFoundException("Workout $workoutId does not exist")))
     }
 
-    fun findExerciseForUser(userId: String, exerciseId: String) : Mono<ExerciseEntity> {
+    fun findExerciseForUser(userId: String, exerciseId: String): Mono<ExerciseEntity> {
         return exerciseRepository.findByIdAndUserId(exerciseId, userId)
             .switchIfEmpty(Mono.error(EntityNotFoundException("Exercise $exerciseId does not exist")))
     }

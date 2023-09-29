@@ -32,7 +32,14 @@ data class ExerciseRecordEntity(
     var weight: WeightEntity,
     var warmup: Boolean? = null,
     var rir: RepetitionsInReserveEntity? = null,
+    var elevation: ElevationEntity? = null,
+    var contraction: ContractionEntity? = null,
     var myoRepMatch: Boolean? = null,
+)
+
+data class WeightEntity(
+    var kg: Float? = null,
+    var bodyWeight: Boolean? = null
 )
 
 data class RepetitionsInReserveEntity(
@@ -40,7 +47,21 @@ data class RepetitionsInReserveEntity(
     var max: Int? = null,
 )
 
-data class WeightEntity(
-    var kg: Float? = null,
-    var bodyWeight: Boolean? = null
+data class ElevationEntity(
+    var cm: Float
+)
+
+data class ContractionEntity(
+    var isometric: IsometricEntity? = null,
+    var eccentric: EccentricEntity? = null,
+)
+
+data class IsometricEntity(
+    var minSeconds: Float,
+    var maxSeconds: Float? = null
+)
+
+data class EccentricEntity(
+    var minSeconds: Float,
+    var maxSeconds: Float? = null
 )
