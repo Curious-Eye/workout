@@ -283,8 +283,13 @@ function setExerciseInputIsometric(isometric: Isometric) {
 }
 
 function setElevation(elevation: number) {
-  if (!exerciseInput.value.elevation) exerciseInput.value.elevation = {cm: elevation}
-  else exerciseInput.value.elevation.cm = elevation
+  if (!elevation)
+    exerciseInput.value.elevation = undefined
+  else {
+    if (!exerciseInput.value.elevation) exerciseInput.value.elevation = {cm: elevation}
+    else exerciseInput.value.elevation.cm = elevation
+  }
+
 }
 
 async function deleteWorkout() {
