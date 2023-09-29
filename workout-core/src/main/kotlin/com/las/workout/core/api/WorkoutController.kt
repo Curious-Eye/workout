@@ -64,4 +64,17 @@ class WorkoutController {
         @Parameter(hidden = true) @AuthenticationPrincipal user: User,
         @PathVariable id: String
     ): Mono<Void> = workoutService.deleteWorkout(id = id, userId = user.username)
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/api/workouts/{workoutId}/exercises/{exerciseIndex}")
+    fun deleteRecordedExercise(
+        @Parameter(hidden = true) @AuthenticationPrincipal user: User,
+        @PathVariable workoutId: String,
+        @PathVariable exerciseIndex: Int,
+    ): Mono<WorkoutDto> = workoutService.deleteRecordedExercise(
+        userId = user.username,
+        workoutId = workoutId,
+        exerciseIndex = exerciseIndex
+    )
+        .map { WorkoutDto(it) }
 }

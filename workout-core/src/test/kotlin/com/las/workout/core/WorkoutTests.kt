@@ -284,4 +284,47 @@ class WorkoutTests : BaseTest() {
         dataHelper.workoutRepository.findById("w1").block() shouldBe null
     }
 
+    @Test
+    fun `User should be able to delete exercise record`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(listOf(
+            DataHelper.WorkoutSetupRqDto(
+                id = "w1",
+                userId = "u1",
+                exercises = mutableListOf(
+                    ExerciseRecordEntity(
+                        exerciseId = "e1",
+                        repetitions = 5,
+                        weight = WeightEntity(bodyWeight = true)
+                    ),
+                    ExerciseRecordEntity(
+                        exerciseId = "e2",
+                        repetitions = 6,
+                        weight = WeightEntity(kg = 10f)
+                    )
+                )
+            ),
+        )).collectList().block()
+
+        // WHEN
+        val res = webTestClient.deleteAuthed(userSetup.accessToken)
+            .uri("/api/workouts/w1/exercises/0")
+            .exchange()
+
+        // THEN
+        res.expectStatus().is2xxSuccessful
+
+        val resp = res.expectBody(WorkoutDto::class.java).returnResult().responseBody!!
+        resp.exercises.size shouldBe 1
+        resp.exercises[0].exerciseId shouldBe "e2"
+        resp.exercises[0].repetitions shouldBe 6
+        resp.exercises[0].weight.kg shouldBe 10f
+
+        val workoutEntity = dataHelper.workoutRepository.findById("w1").block()!!
+        workoutEntity.exercises.size shouldBe 1
+        workoutEntity.exercises[0].exerciseId shouldBe "e2"
+        workoutEntity.exercises[0].repetitions shouldBe 6
+        workoutEntity.exercises[0].weight.kg shouldBe 10f
+    }
 }

@@ -48,7 +48,7 @@
         <v-divider class="pb-2"/>
         <div class="pb-2" v-for="(item, index) in workout.exercises" :key="index">
           <div class="pb-2">
-            <ExerciseRecordComponent :exercise-record="item"/>
+            <ExerciseRecordComponent :exercise-record="item" @deleteRequested="deleteRecordedExercise(index)"/>
           </div>
           <v-divider/>
         </div>
@@ -290,6 +290,10 @@ function setElevation(elevation: number) {
 async function deleteWorkout() {
   await useWorkoutApi().deleteWorkout(props.workout.id)
   showDeleteWorkoutDialog.value = false
+}
+
+async function deleteRecordedExercise(recordInd: number) {
+  await useWorkoutApi().deleteRecordedExercise(props.workout?.id, recordInd)
 }
 </script>
 

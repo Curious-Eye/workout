@@ -1,5 +1,6 @@
 package com.las.workout.core.service
 
+import com.las.core.ext.errorIf
 import com.las.core.ext.zipWhenToPair
 import com.las.workout.core.api.dto.WorkoutRecordExerciseRqDto
 import com.las.workout.core.api.dto.WorkoutRecordRqDto
@@ -170,6 +171,20 @@ class WorkoutService {
 
     fun findAllByExercise(exerciseId: String): Flux<WorkoutEntity> {
         return workoutRepository.findAllByExerciseId(exerciseId)
+    }
+
+    fun deleteRecordedExercise(userId: String, workoutId: String, exerciseIndex: Int): Mono<WorkoutEntity> {
+        if (exerciseIndex < 0)
+            return Mono.error(EntityNotFoundException("Exercise record with index $exerciseIndex does not exist"))
+
+        return findWorkoutForUser(userId = userId, workoutId = workoutId)
+            .errorIf(EntityNotFoundException("Exercise record with index $exerciseIndex does not exist")) {
+                it.exercises.size <= exerciseIndex
+            }
+            .flatMap {
+                it.exercises.removeAt(exerciseIndex)
+                workoutRepository.save(it)
+            }
     }
 
 }

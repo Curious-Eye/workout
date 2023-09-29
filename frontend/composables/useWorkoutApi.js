@@ -77,5 +77,22 @@ export const useWorkoutApi = (app = undefined) => {
 
             return Promise.resolve()
         },
+        /**
+         * Delete a workout
+         * @param workoutId {string}
+         * @param exerciseIndex {number}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async deleteRecordedExercise(workoutId, exerciseIndex) {
+            console.log(`Try deleteRecordedExercise. workoutId=${workoutId}, exerciseIndex=${exerciseIndex}`)
+            const {data, error} = await useApi(app).deleteAuthed(`/api/workouts/${workoutId}/exercises/${exerciseIndex}`)
+
+            if (!!error)
+                return {error}
+
+            useMainStore().setWorkout(data)
+
+            return Promise.resolve()
+        },
     }
 }
