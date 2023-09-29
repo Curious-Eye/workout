@@ -23,15 +23,19 @@
 
         <v-dialog
             v-model="showDeleteWorkoutDialog"
-            width="210px"
+            max-width="250px"
         >
           <v-card>
             <v-card-text>
               Delete this workout?
             </v-card-text>
             <v-card-actions class="d-flex justify-space-between">
-              <v-btn color="red" @click="deleteWorkout">Yes</v-btn>
-              <v-btn variant="tonal" @click="showDeleteWorkoutDialog = false">No</v-btn>
+              <div class="pl-2 pb-2">
+                <v-btn color="teal-darken-1" variant="flat" @click="deleteWorkout">Yes</v-btn>
+              </div>
+              <div class="pr-2 pb-2">
+                <v-btn variant="text" @click="showDeleteWorkoutDialog = false">No</v-btn>
+              </div>
             </v-card-actions>
           </v-card>
         </v-dialog>
