@@ -1,12 +1,30 @@
 <template>
   <div>
+    <v-snackbar
+        v-model="showErrorSnackbar"
+        location="top"
+        multi-line
+        :timeout="6000"
+    >
+      {{ errorMsg }}
+
+      <template v-slot:actions>
+        <v-btn
+            color="teal-darken-1"
+            variant="flat"
+            @click="showErrorSnackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-virtual-scroll
         :items="useMainStore().workouts"
         height="100%"
     >
       <template v-slot:default="{ item }">
         <v-list-item>
-          <WorkoutComponent class="mb-5" :workout="item"/>
+          <WorkoutComponent class="mb-5" :workout="item" @apiError="displayErrorMsg"/>
         </v-list-item>
       </template>
     </v-virtual-scroll>
@@ -93,11 +111,23 @@ const workoutInput = ref({
   date: new Date()
 })
 
+const showErrorSnackbar = ref(false)
+const errorMsg = ref('')
+
 async function recordWorkout() {
   if (workoutInput.value.meso) {
-    await useWorkoutApi().recordWorkout(workoutInput.value.meso, workoutInput.value.date)
+    const {error} = await useWorkoutApi().recordWorkout(workoutInput.value.meso, workoutInput.value.date)
+
+    if (error)
+      displayErrorMsg(error.body.msg)
+
     showRecordWorkoutDialog.value = false
   }
+}
+
+function displayErrorMsg(msg: string) {
+  showErrorSnackbar.value = true
+  errorMsg.value = msg
 }
 </script>
 

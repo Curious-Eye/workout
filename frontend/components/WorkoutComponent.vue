@@ -182,6 +182,8 @@ import {Eccentric, ExerciseRecord, Isometric, RepsInReserve, Workout} from "~/do
 import {PropType} from "@vue/runtime-core";
 import utilsMain from "~/services/utilsMain";
 
+const emit = defineEmits<{(e: 'apiError', value: string): void}>()
+
 const props = defineProps({
   workout: {
     type: Object as PropType<Workout>,
@@ -236,7 +238,11 @@ async function recordExercise() {
     if (val.elevation?.cm && val.elevation?.cm <= 0)
       val.elevation = undefined
 
-    await useWorkoutApi().recordExercise(props.workout.id, val)
+    const {error} = await useWorkoutApi().recordExercise(props.workout.id, val)
+
+    if (error)
+      emit('apiError', error.body.msg)
+
     showRecordExerciseDialog.value = false
   }
   exerciseInput.value = val
@@ -289,16 +295,23 @@ function setElevation(elevation: number) {
     if (!exerciseInput.value.elevation) exerciseInput.value.elevation = {cm: elevation}
     else exerciseInput.value.elevation.cm = elevation
   }
-
+  exerciseInput.value.elevation = {cm:''}
 }
 
 async function deleteWorkout() {
-  await useWorkoutApi().deleteWorkout(props.workout.id)
+  const {error} = await useWorkoutApi().deleteWorkout(props.workout.id)
+
+  if (error)
+    emit('apiError', error.body.msg)
+
   showDeleteWorkoutDialog.value = false
 }
 
 async function deleteRecordedExercise(recordInd: number) {
-  await useWorkoutApi().deleteRecordedExercise(props.workout?.id, recordInd)
+  const {error} = await useWorkoutApi().deleteRecordedExercise(props.workout?.id, recordInd)
+
+  if (error)
+    emit('apiError', error.body.msg)
 }
 </script>
 
