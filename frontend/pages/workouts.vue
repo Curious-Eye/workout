@@ -76,8 +76,12 @@
           </v-card-text>
         </div>
         <v-card-actions class="d-flex justify-space-between mb-2">
-          <v-btn color="green" @click="recordWorkout">Record</v-btn>
-          <v-btn variant="tonal" @click="showRecordWorkoutDialog = false">Cancel</v-btn>
+          <div class="pl-2">
+            <v-btn color="teal-darken-1" variant="flat" @click="recordWorkout">Record</v-btn>
+          </div>
+          <div class="pr-2">
+            <v-btn variant="text" @click="showRecordWorkoutDialog = false">Cancel</v-btn>
+          </div>
         </v-card-actions>
       </v-card>
     </v-dialog>
