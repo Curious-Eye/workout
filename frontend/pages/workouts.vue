@@ -1,28 +1,5 @@
 <template>
   <div>
-<!--    <v-card-->
-<!--        class="mx-auto"-->
-<!--        min-width="30%"-->
-<!--    >-->
-<!--      <v-card-item class="bg-indigo">-->
-<!--        <v-card-title>-->
-<!--          Workout record-->
-<!--        </v-card-title>-->
-
-<!--        <template v-slot:append>-->
-<!--          <v-btn-->
-<!--              color="white"-->
-<!--              icon="mdi-plus"-->
-<!--              size="small"-->
-<!--              @click="showRecordWorkoutDialog = true"-->
-<!--          ></v-btn>-->
-<!--        </template>-->
-<!--      </v-card-item>-->
-
-<!--      <v-card-text class="pt-4">-->
-<!--      </v-card-text>-->
-<!--    </v-card>-->
-
     <v-virtual-scroll
         :items="useMainStore().workouts"
         height="100%"
