@@ -295,7 +295,6 @@ function setElevation(elevation: number) {
     if (!exerciseInput.value.elevation) exerciseInput.value.elevation = {cm: elevation}
     else exerciseInput.value.elevation.cm = elevation
   }
-  exerciseInput.value.elevation = {cm:''}
 }
 
 async function deleteWorkout() {
