@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex">
+  <div class="d-flex align-center">
     <div class="mr-5">
       {{ exercise.name }}
     </div>
