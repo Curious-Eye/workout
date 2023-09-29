@@ -36,7 +36,7 @@
     <v-fab-transition>
       <v-btn
           class="add-workout-btn"
-          color="white"
+          color="teal-darken-1"
           icon="mdi-plus"
           size="x-large"
           @click="showRecordWorkoutDialog = true"
