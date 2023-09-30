@@ -210,7 +210,7 @@ function getWorkoutMesocycle() {
 
 async function recordExercise() {
   const val = exerciseInput.value
-  if (val.exerciseId && val.repetitions && val.weight) {
+  if (val.exerciseId && val.repetitions > 0 && val.weight) {
     if (val.weight.bodyWeight)
       val.weight.kg = undefined
 
