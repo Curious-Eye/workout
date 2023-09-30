@@ -232,6 +232,9 @@ async function recordExercise() {
     if (val.contraction?.isometric && val.contraction.isometric.minSeconds < 0)
       val.contraction.isometric = undefined
 
+    if (val.contraction?.isometric && val.contraction.isometric.minSeconds == 0 && !val.contraction?.isometric.maxSeconds)
+      val.contraction.isometric = undefined
+
     if (val.contraction?.isometric?.maxSeconds && val.contraction.isometric.maxSeconds == 0)
       val.contraction.isometric.maxSeconds = undefined
 
