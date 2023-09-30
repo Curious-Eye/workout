@@ -301,12 +301,11 @@ function setElevation(elevation: number) {
 }
 
 async function deleteWorkout() {
+  showDeleteWorkoutDialog.value = false
   const {error} = await useWorkoutApi().deleteWorkout(props.workout.id)
 
   if (error)
     emit('apiError', error.body.msg)
-
-  showDeleteWorkoutDialog.value = false
 }
 
 async function deleteRecordedExercise(recordInd: number) {
