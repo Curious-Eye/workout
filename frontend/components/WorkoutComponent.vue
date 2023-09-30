@@ -266,13 +266,17 @@ function setExerciseInputEccentric(eccentric: Eccentric) {
   if (!exerciseInput.value.contraction)
     exerciseInput.value.contraction = {}
 
-  if (!exerciseInput.value.contraction.eccentric)
-    exerciseInput.value.contraction.eccentric = eccentric
+  if (eccentric.minSeconds == 0)
+    exerciseInput.value.contraction.eccentric = undefined
   else {
-    if (eccentric.minSeconds)
-      exerciseInput.value.contraction.eccentric.minSeconds = eccentric.minSeconds
-    else
-      exerciseInput.value.contraction.eccentric.maxSeconds = eccentric.maxSeconds
+    if (!exerciseInput.value.contraction.eccentric)
+      exerciseInput.value.contraction.eccentric = eccentric
+    else {
+      if (eccentric.minSeconds)
+        exerciseInput.value.contraction.eccentric.minSeconds = eccentric.minSeconds
+      else
+        exerciseInput.value.contraction.eccentric.maxSeconds = eccentric.maxSeconds
+    }
   }
 }
 
@@ -281,13 +285,17 @@ function setExerciseInputIsometric(isometric: Isometric) {
   if (!exerciseInput.value.contraction)
     exerciseInput.value.contraction = {}
 
-  if (!exerciseInput.value.contraction.isometric)
-    exerciseInput.value.contraction.isometric = isometric
+  if (isometric.minSeconds == 0)
+    exerciseInput.value.contraction.isometric = undefined
   else {
-    if (isometric.minSeconds)
-      exerciseInput.value.contraction.isometric.minSeconds = isometric.minSeconds
-    else
-      exerciseInput.value.contraction.isometric.maxSeconds = isometric.maxSeconds
+    if (!exerciseInput.value.contraction.isometric)
+      exerciseInput.value.contraction.isometric = isometric
+    else {
+      if (isometric.minSeconds)
+        exerciseInput.value.contraction.isometric.minSeconds = isometric.minSeconds
+      else
+        exerciseInput.value.contraction.isometric.maxSeconds = isometric.maxSeconds
+    }
   }
 }
 
