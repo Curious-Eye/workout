@@ -44,6 +44,7 @@ class StatsService {
                     .collectList()
                     .map { it.filter { w -> w.exercises.isNotEmpty() } }
             )
+            .map { (exercises, workouts) -> exercises to workouts.sortedBy { it.date } }
             .flatMap { (exercises, workouts) ->
                 Mono.fromCallable {
                     StatsGetForUserRespDto(
