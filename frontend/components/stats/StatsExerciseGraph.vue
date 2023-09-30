@@ -1,19 +1,18 @@
 <template>
-  <div>
+  <div class="d-flex flex-column pl-5 pb-5 align-center">
     <div class="pb-5">
       {{ useMainStore().getExercise(exerciseId).name }}
     </div>
-    <div>
-      <ClientOnly>
+    <ClientOnly>
+      <div style="width: 80%">
         <apexchart
-            height="400"
-            width="100%"
+            height="500"
             type="bar"
             :options="options"
             :series="series"
         ></apexchart>
-      </ClientOnly>
-    </div>
+      </div>
+    </ClientOnly>
   </div>
 </template>
 

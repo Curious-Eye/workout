@@ -1,8 +1,8 @@
 <template>
-  <div class="d-flex flex-column">
+  <div class="d-flex flex-column flex-grow-1 ">
     <div v-for="exerciseId in stats.keys()" :key="exerciseId">
       <div v-if="stats.get(exerciseId).volume.length > 0">
-        <StatsExerciseGraph class="pl-5 pb-5" :exercise-id="exerciseId" :stats="stats.get(exerciseId)"/>
+        <StatsExerciseGraph :exercise-id="exerciseId" :stats="stats.get(exerciseId)"/>
       </div>
     </div>
   </div>
