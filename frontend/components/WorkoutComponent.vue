@@ -93,7 +93,7 @@
                       label="min:"
                       type="number"
                       :disabled="!!exerciseInput.warmup"
-                      @update:model-value="value => setExerciseInputRir({min: value} as RepsInReserve)"
+                      @update:model-value="setExerciseInputRirMin"
                   />
                   <v-text-field
                       class="ml-5"
@@ -101,7 +101,7 @@
                       label="max:"
                       type="number"
                       :disabled="!!exerciseInput.warmup"
-                      @update:model-value="value => setExerciseInputRir({max: value} as RepsInReserve)"
+                      @update:model-value="setExerciseInputRirMax"
                   />
                 </div>
                 <div class="d-flex align-center">
@@ -113,14 +113,14 @@
                       :model-value="exerciseInput.contraction?.eccentric?.minSeconds"
                       label="min:"
                       type="number"
-                      @update:model-value="value => setExerciseInputEccentric({minSeconds: value} as Eccentric)"
+                      @update:model-value="setExerciseInputEccentricMin"
                   />
                   <v-text-field
                       class="ml-5"
                       :model-value="exerciseInput.contraction?.eccentric?.maxSeconds"
                       label="max:"
                       type="number"
-                      @update:model-value="value => setExerciseInputEccentric({maxSeconds: value} as Eccentric)"
+                      @update:model-value="setExerciseInputEccentricMax"
                   />
                 </div>
                 <div class="d-flex align-center">
@@ -132,14 +132,14 @@
                       :model-value="exerciseInput.contraction?.isometric?.minSeconds"
                       label="min:"
                       type="number"
-                      @update:model-value="value => setExerciseInputIsometric({minSeconds: value} as Isometric)"
+                      @update:model-value="setExerciseInputIsometricMin"
                   />
                   <v-text-field
                       class="ml-5"
                       :model-value="exerciseInput.contraction?.isometric?.maxSeconds"
                       label="max:"
                       type="number"
-                      @update:model-value="value => setExerciseInputIsometric({maxSeconds: value} as Isometric)"
+                      @update:model-value="setExerciseInputIsometricMax"
                   />
                 </div>
                 <div class="d-flex align-center">
@@ -182,7 +182,7 @@ import {Eccentric, ExerciseRecord, Isometric, RepsInReserve, Workout} from "~/do
 import {PropType} from "@vue/runtime-core";
 import utilsMain from "~/services/utilsMain";
 
-const emit = defineEmits<{(e: 'apiError', value: string): void}>()
+const emit = defineEmits<{ (e: 'apiError', value: string): void }>()
 
 const props = defineProps({
   workout: {
@@ -251,52 +251,71 @@ async function recordExercise() {
   exerciseInput.value = val
 }
 
-function setExerciseInputRir(rir: RepsInReserve) {
+function setExerciseInputRirMin(min: number) {
   if (!exerciseInput.value.rir)
-    exerciseInput.value.rir = rir
+    exerciseInput.value.rir = {min}
+  else
+    exerciseInput.value.rir.min = min
+}
+
+function setExerciseInputRirMax(max: number) {
+  if (!exerciseInput.value.rir)
+    exerciseInput.value.rir = {min: 0, max}
+  else
+    exerciseInput.value.rir.max = max
+
+  if (!exerciseInput.value.rir.min && exerciseInput.value.rir.min !== 0)
+    exerciseInput.value.rir.min = 0
+}
+
+function setExerciseInputEccentricMin(minSeconds: number) {
+  if (!exerciseInput.value.contraction)
+    exerciseInput.value.contraction = {eccentric: {minSeconds}}
   else {
-    if (rir.min)
-      exerciseInput.value.rir.min = rir.min
+    if (exerciseInput.value.contraction.eccentric)
+      exerciseInput.value.contraction.eccentric.minSeconds = minSeconds
     else
-      exerciseInput.value.rir.max = rir.max
+      exerciseInput.value.contraction.eccentric = {minSeconds}
   }
 }
 
-function setExerciseInputEccentric(eccentric: Eccentric) {
+function setExerciseInputEccentricMax(maxSeconds: number) {
   if (!exerciseInput.value.contraction)
-    exerciseInput.value.contraction = {}
-
-  if (eccentric.minSeconds == 0)
-    exerciseInput.value.contraction.eccentric = undefined
+    exerciseInput.value.contraction = {eccentric: {minSeconds: 0, maxSeconds}}
   else {
-    if (!exerciseInput.value.contraction.eccentric)
-      exerciseInput.value.contraction.eccentric = eccentric
-    else {
-      if (eccentric.minSeconds)
-        exerciseInput.value.contraction.eccentric.minSeconds = eccentric.minSeconds
-      else
-        exerciseInput.value.contraction.eccentric.maxSeconds = eccentric.maxSeconds
-    }
+    if (exerciseInput.value.contraction.eccentric)
+      exerciseInput.value.contraction.eccentric.maxSeconds = maxSeconds
+    else
+      exerciseInput.value.contraction.eccentric = {minSeconds: 0, maxSeconds}
+  }
+
+  if (exerciseInput.value.contraction.eccentric && !exerciseInput.value.contraction.eccentric.minSeconds)
+    exerciseInput.value.contraction.eccentric.minSeconds = 0
+}
+
+function setExerciseInputIsometricMin(minSeconds: number) {
+  if (!exerciseInput.value.contraction)
+    exerciseInput.value.contraction = {isometric: {minSeconds}}
+  else {
+    if (exerciseInput.value.contraction.isometric)
+      exerciseInput.value.contraction.isometric.minSeconds = minSeconds
+    else
+      exerciseInput.value.contraction.isometric = {minSeconds}
   }
 }
 
-
-function setExerciseInputIsometric(isometric: Isometric) {
+function setExerciseInputIsometricMax(maxSeconds: number) {
   if (!exerciseInput.value.contraction)
-    exerciseInput.value.contraction = {}
-
-  if (isometric.minSeconds == 0)
-    exerciseInput.value.contraction.isometric = undefined
+    exerciseInput.value.contraction = {isometric: {minSeconds: 0, maxSeconds}}
   else {
-    if (!exerciseInput.value.contraction.isometric)
-      exerciseInput.value.contraction.isometric = isometric
-    else {
-      if (isometric.minSeconds)
-        exerciseInput.value.contraction.isometric.minSeconds = isometric.minSeconds
-      else
-        exerciseInput.value.contraction.isometric.maxSeconds = isometric.maxSeconds
-    }
+    if (exerciseInput.value.contraction.isometric)
+      exerciseInput.value.contraction.isometric.maxSeconds = maxSeconds
+    else
+      exerciseInput.value.contraction.isometric = {minSeconds: 0, maxSeconds}
   }
+
+  if (exerciseInput.value.contraction.isometric && !exerciseInput.value.contraction.isometric.minSeconds)
+    exerciseInput.value.contraction.isometric.minSeconds = 0
 }
 
 function setElevation(elevation: number) {
