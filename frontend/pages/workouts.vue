@@ -115,7 +115,7 @@ const showErrorSnackbar = ref(false)
 const errorMsg = ref('')
 
 async function recordWorkout() {
-  if (workoutInput.value.meso) {
+  if (workoutInput.value.date) {
     const {error} = await useWorkoutApi().recordWorkout(workoutInput.value.meso, workoutInput.value.date)
 
     if (error)
