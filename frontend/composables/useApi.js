@@ -1,5 +1,8 @@
 import BaseRequestService from "~/services/baseRequestService";
 
+// 10 days
+const authCookieMaxAge = 864000
+
 /**
  *
  * @param app {NuxtApp}
@@ -10,6 +13,24 @@ export const useApi = (app) => {
     const rt = useState('refreshToken', () => useCookie('refreshToken').value)
     if (!!app)
         app = useNuxtApp()
+
+    const setCookies = (tokens) => {
+        at.value = tokens.accessToken
+        rt.value = tokens.refreshToken
+        if (process.server) {
+            app.ssrContext.event.node.res.appendHeader(
+                'set-cookie',
+                `accessToken=${tokens.accessToken}; Max-Age=${authCookieMaxAge}`
+            )
+            app.ssrContext.event.node.res.appendHeader(
+                'set-cookie',
+                `refreshToken=${tokens.refreshToken}; Max-Age=${authCookieMaxAge}`
+            )
+        } else {
+            document.cookie = `accessToken=${tokens.accessToken}; Max-Age=${authCookieMaxAge}`
+            document.cookie = `refreshToken=${tokens.refreshToken}; Max-Age=${authCookieMaxAge}`
+        }
+    }
 
     return {
         /**
@@ -24,14 +45,8 @@ export const useApi = (app) => {
             const {data, error, newTokens} =
                 await BaseRequestService.postAuthed(path, body, serverHost, at.value, rt.value, silentReAuthenticate)
 
-            if (!!newTokens) {
-                at.value = newTokens.accessToken
-                rt.value = newTokens.refreshToken
-                if (process.server) {
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'accessToken=' + newTokens.accessToken)
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'refreshToken=' + newTokens.refreshToken)
-                }
-            }
+            if (!!newTokens)
+                setCookies(newTokens)
 
             if (error) {
                 console.log(`Error from useApi::postAuthed(${path},${body}): `)
@@ -81,17 +96,8 @@ export const useApi = (app) => {
             const {data, error, newTokens} =
                 await BaseRequestService.getAuthed(path, serverHost, at.value, rt.value, silentReAuthenticate)
 
-            if (!!newTokens) {
-                at.value = newTokens.accessToken
-                rt.value = newTokens.refreshToken
-                if (process.server) {
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'accessToken=' + newTokens.accessToken)
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'refreshToken=' + newTokens.refreshToken)
-                } else {
-                    document.cookie = `accessToken=${newTokens.accessToken}`
-                    document.cookie = `refreshToken=${newTokens.refreshToken}`
-                }
-            }
+            if (!!newTokens)
+                setCookies(newTokens)
 
             if (error) {
                 console.log(`Error from useApi::getAuthed(${path}): `)
@@ -119,17 +125,8 @@ export const useApi = (app) => {
             const {data, error, newTokens} =
                 await BaseRequestService.deleteAuthed(path, serverHost, at.value, rt.value, silentReAuthenticate)
 
-            if (!!newTokens) {
-                at.value = newTokens.accessToken
-                rt.value = newTokens.refreshToken
-                if (process.server) {
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'accessToken=' + newTokens.accessToken)
-                    app.ssrContext.event.node.res.appendHeader('set-cookie', 'refreshToken=' + newTokens.refreshToken)
-                } else {
-                    document.cookie = `accessToken=${newTokens.accessToken}`
-                    document.cookie = `refreshToken=${newTokens.refreshToken}`
-                }
-            }
+            if (!!newTokens)
+                setCookies(newTokens)
 
             if (error) {
                 console.log(`Error from useApi::deleteAuthed(${path}): `)
