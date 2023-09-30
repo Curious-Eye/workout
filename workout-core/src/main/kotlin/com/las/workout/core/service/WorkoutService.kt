@@ -174,6 +174,8 @@ class WorkoutService {
     }
 
     fun deleteRecordedExercise(userId: String, workoutId: String, exerciseIndex: Int): Mono<WorkoutEntity> {
+        log.debug("User {} delete recorded exercise with index {} for workout {}", userId, exerciseIndex, workoutId)
+
         if (exerciseIndex < 0)
             return Mono.error(EntityNotFoundException("Exercise record with index $exerciseIndex does not exist"))
 
