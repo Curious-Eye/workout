@@ -2,7 +2,7 @@
   <div>
     <v-sheet class="bg-teal pa-6" rounded>
       <v-card class="mx-auto px-6 py-8">
-        <div class="d-flex flex-column">
+        <div class="d-flex flex-column" style="min-width: 300px">
           <v-form
               v-model="form"
               @submit.prevent="onSubmit"
