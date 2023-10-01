@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.util.*
 
-@Document
+@Document(collection = "users")
 class UserEntity(
     @Id
     val id: String,
