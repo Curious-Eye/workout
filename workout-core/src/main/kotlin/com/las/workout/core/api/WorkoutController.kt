@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -75,6 +77,21 @@ class WorkoutController {
         userId = user.username,
         workoutId = workoutId,
         exerciseIndex = exerciseIndex
+    )
+        .map { WorkoutDto(it) }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/api/workouts/{workoutId}/actions/move-exercise")
+    fun moveRecordedExercise(
+        @Parameter(hidden = true) @AuthenticationPrincipal user: User,
+        @PathVariable workoutId: String,
+        @RequestParam(name = "fromIndex") fromIndex: Int,
+        @RequestParam(name = "toIndex") toIndex: Int,
+    ): Mono<WorkoutDto> = workoutService.moveRecordedExercise(
+        userId = user.username,
+        workoutId = workoutId,
+        fromIndex = fromIndex,
+        toIndex = toIndex
     )
         .map { WorkoutDto(it) }
 }

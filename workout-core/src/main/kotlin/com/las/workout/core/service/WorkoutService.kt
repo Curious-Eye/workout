@@ -173,6 +173,7 @@ class WorkoutService {
         return workoutRepository.findAllByExerciseId(exerciseId)
     }
 
+    @Transactional
     fun deleteRecordedExercise(userId: String, workoutId: String, exerciseIndex: Int): Mono<WorkoutEntity> {
         log.debug("User {} delete recorded exercise with index {} for workout {}", userId, exerciseIndex, workoutId)
 
@@ -185,6 +186,29 @@ class WorkoutService {
             }
             .flatMap {
                 it.exercises.removeAt(exerciseIndex)
+                workoutRepository.save(it)
+            }
+    }
+
+    @Transactional
+    fun moveRecordedExercise(userId: String, workoutId: String, fromIndex: Int, toIndex: Int): Mono<WorkoutEntity> {
+        log.debug("User {} move recorded exercise for workout {} from index {} to {}", userId, workoutId, fromIndex, toIndex)
+
+        if (fromIndex < 0)
+            return Mono.error(IllegalArgumentsException("fromIndex must not be negative"))
+
+        if (toIndex < 0)
+            return Mono.error(IllegalArgumentsException("toIndex must not be negative"))
+
+        if (fromIndex == toIndex)
+            return Mono.error(IllegalArgumentsException("toIndex must not be equal to fromIndex"))
+
+        return findWorkoutForUser(userId = userId, workoutId = workoutId)
+            .errorIf(IllegalArgumentsException("fromIndex is out of bounds")) { fromIndex >= it.exercises.size }
+            .errorIf(IllegalArgumentsException("toIndex is out of bounds")) { toIndex >= it.exercises.size }
+            .flatMap {
+                val e = it.exercises.removeAt(fromIndex)
+                it.exercises.add(if (fromIndex > toIndex) toIndex else toIndex, e)
                 workoutRepository.save(it)
             }
     }

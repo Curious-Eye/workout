@@ -6,10 +6,7 @@ import com.las.workout.core.data.entity.ExerciseRecordEntity
 import com.las.workout.core.data.entity.RepetitionsInReserveEntity
 import com.las.workout.core.data.entity.WeightEntity
 import com.las.workout.stats.api.dto.StatsGetForExerciseRespDto
-import com.las.workout.test.DataHelper
-import com.las.workout.test.deleteAuthed
-import com.las.workout.test.getAuthed
-import com.las.workout.test.postAuthed
+import com.las.workout.test.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -326,5 +323,90 @@ class WorkoutTests : BaseTest() {
         workoutEntity.exercises[0].exerciseId shouldBe "e2"
         workoutEntity.exercises[0].repetitions shouldBe 6
         workoutEntity.exercises[0].weight.kg shouldBe 10f
+    }
+
+    @Test
+    fun `User should be able to move recorded exercises withing the workout`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(listOf(
+            DataHelper.WorkoutSetupRqDto(
+                id = "w1",
+                userId = "u1",
+                exercises = mutableListOf(
+                    ExerciseRecordEntity(
+                        exerciseId = "e1",
+                        repetitions = 5,
+                        weight = WeightEntity(bodyWeight = true)
+                    ),
+                    ExerciseRecordEntity(
+                        exerciseId = "e2",
+                        repetitions = 6,
+                        weight = WeightEntity(kg = 10f)
+                    ),
+                    ExerciseRecordEntity(
+                        exerciseId = "e3",
+                        repetitions = 7,
+                        weight = WeightEntity(kg = 20f)
+                    )
+                )
+            ),
+        )).collectList().block()
+        var fromIndex = 0
+        var toIndex = 2
+
+        // WHEN
+        var resp = webTestClient.putAuthed(userSetup.accessToken)
+            .uri {
+                it.path("/api/workouts/w1/actions/move-exercise")
+                    .queryParam("fromIndex", fromIndex)
+                    .queryParam("toIndex", toIndex)
+                    .build()
+            }
+            .exchange()
+
+        // THEN
+        resp.expectStatus().is2xxSuccessful
+
+        var respBody = resp.expectBody(WorkoutDto::class.java).returnResult().responseBody!!
+        respBody.exercises.size shouldBe 3
+        respBody.exercises[0].exerciseId shouldBe "e2"
+        respBody.exercises[0].repetitions shouldBe 6
+        respBody.exercises[0].weight.kg shouldBe 10f
+        respBody.exercises[1].exerciseId shouldBe "e3"
+        respBody.exercises[1].repetitions shouldBe 7
+        respBody.exercises[1].weight.kg shouldBe 20f
+        respBody.exercises[2].exerciseId shouldBe "e1"
+        respBody.exercises[2].repetitions shouldBe 5
+        respBody.exercises[2].weight.bodyWeight shouldBe true
+
+        // GIVEN
+        fromIndex = 2
+        toIndex = 0
+
+        // WHEN
+        resp = webTestClient.putAuthed(userSetup.accessToken)
+            .uri {
+                it.path("/api/workouts/w1/actions/move-exercise")
+                    .queryParam("fromIndex", fromIndex)
+                    .queryParam("toIndex", toIndex)
+                    .build()
+            }
+            .exchange()
+
+        // THEN
+        resp.expectStatus().is2xxSuccessful
+
+        respBody = resp.expectBody(WorkoutDto::class.java).returnResult().responseBody!!
+        respBody.exercises.size shouldBe 3
+        respBody.exercises[0].exerciseId shouldBe "e1"
+        respBody.exercises[0].repetitions shouldBe 5
+        respBody.exercises[0].weight.bodyWeight shouldBe true
+        respBody.exercises[1].exerciseId shouldBe "e2"
+        respBody.exercises[1].repetitions shouldBe 6
+        respBody.exercises[1].weight.kg shouldBe 10f
+        respBody.exercises[2].exerciseId shouldBe "e3"
+        respBody.exercises[2].repetitions shouldBe 7
+        respBody.exercises[2].weight.kg shouldBe 20f
     }
 }

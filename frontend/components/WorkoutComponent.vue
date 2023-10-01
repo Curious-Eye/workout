@@ -46,11 +46,21 @@
           Exercises:
         </div>
         <v-divider class="pb-2"/>
-        <div class="pb-2" v-for="(item, index) in workout.exercises" :key="index">
-          <div class="pb-2">
-            <ExerciseRecordComponent :exercise-record="item" @deleteRequested="deleteRecordedExercise(index)"/>
-          </div>
-          <v-divider/>
+        <div class="pb-2">
+          <draggable
+              :list="workout.exercises"
+              @update="onRecordDragged"
+              dragClass=""
+              :item-key="el => el">
+            <template #item="{index, element}">
+              <div class="bg-teal">
+                <div class="pb-2">
+                  <ExerciseRecordComponent :exercise-record="element" @deleteRequested="deleteRecordedExercise(index)"/>
+                </div>
+                <v-divider/>
+              </div>
+            </template>
+          </draggable>
         </div>
 
         <div class="pl-3">
@@ -178,11 +188,12 @@
 
 <script setup lang="ts">
 import {useMainStore} from "~/store";
-import {Eccentric, ExerciseRecord, Isometric, RepsInReserve, Workout} from "~/domain/domain";
+import {ExerciseRecord, Workout} from "~/domain/domain";
 import {PropType} from "@vue/runtime-core";
 import utilsMain from "~/services/utilsMain";
+import draggable from 'vuedraggable'
 
-const emit = defineEmits<{ (e: 'apiError', value: string): void }>()
+const emit = defineEmits<{ (e: 'apiError', value: string): void,  (e: 'loadingStart'): void, (e: 'loadingEnd'): void}>()
 
 const props = defineProps({
   workout: {
@@ -191,7 +202,7 @@ const props = defineProps({
   }
 })
 
-let exerciseInput = useState('exerciseInput', () => {
+const exerciseInput = useState('exerciseInput', () => {
   if (!!useMainStore().lastExerciseRecordInput.exerciseId)
     return useMainStore().lastExerciseRecordInput
   else
@@ -201,8 +212,8 @@ let exerciseInput = useState('exerciseInput', () => {
       weight: {},
     }) as ExerciseRecord
 })
-let showRecordExerciseDialog = ref(false)
-let showDeleteWorkoutDialog = ref(false)
+const showRecordExerciseDialog = ref(false)
+const showDeleteWorkoutDialog = ref(false)
 
 function getWorkoutMesocycle() {
   return props.workout.mesocycle ? props.workout.mesocycle : ''
@@ -341,8 +352,18 @@ async function deleteRecordedExercise(recordInd: number) {
   if (error)
     emit('apiError', error.body.msg)
 }
+
+function onRecordDragged(evt: any) {
+  emit('loadingStart')
+  useWorkoutApi()
+      .moveRecordedExercise(props.workout?.id, evt.oldIndex, evt.newIndex)
+      .then(value => {
+        emit('loadingEnd')
+        if (value.error)
+          emit('apiError', value.error.body.msg)
+      })
+}
 </script>
 
 <style scoped>
-
 </style>

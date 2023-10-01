@@ -81,7 +81,36 @@ export default {
             refreshToken,
             silentReAuthenticate
         )
-    }
+    },
+    /**
+     *
+     * @param path {string}
+     * @param body any
+     * @param baseUri {string}
+     * @param accessToken {string}
+     * @param refreshToken {string}
+     * @param silentReAuthenticate {boolean}
+     * @return {Promise<{data: *}|{data: *, newTokens: { refreshToken: string, accessToken: string }}
+     * |{error:any}|{error: any, newTokens: { refreshToken: string, accessToken: string }}>}
+     */
+    async putAuthed(
+        path,
+        body,
+        baseUri,
+        accessToken,
+        refreshToken,
+        silentReAuthenticate = true
+    ) {
+        return await makeRequest(
+            'put',
+            path,
+            body,
+            baseUri,
+            accessToken,
+            refreshToken,
+            silentReAuthenticate
+        )
+    },
 }
 
 /**

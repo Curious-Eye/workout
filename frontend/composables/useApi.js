@@ -41,7 +41,12 @@ export const useApi = (app) => {
          * @param body {any}
          * @return {Promise<{data: *} | {error: *}>}
          */
-        async postAuthed(path, body, silentReAuthenticate = true, redirectToLoginOnAuthFail = true) {
+        async postAuthed(
+            path,
+            body,
+            silentReAuthenticate = true,
+            redirectToLoginOnAuthFail = true
+        ) {
             const {data, error, newTokens} =
                 await BaseRequestService.postAuthed(path, body, serverHost, at.value, rt.value, silentReAuthenticate)
 
@@ -142,6 +147,41 @@ export const useApi = (app) => {
             }
 
             return {data}
-        }
+        },
+        /**
+         *
+         * @param path {string}
+         * @param silentReAuthenticate {boolean}
+         * @param redirectToLoginOnAuthFail {boolean}
+         * @param body {any}
+         * @return {Promise<{data: *} | {error: *}>}
+         */
+        async putAuthed(
+            path,
+            body,
+            silentReAuthenticate = true,
+            redirectToLoginOnAuthFail = true
+        ) {
+            const {data, error, newTokens} =
+                await BaseRequestService.putAuthed(path, body, serverHost, at.value, rt.value, silentReAuthenticate)
+
+            if (!!newTokens)
+                setCookies(newTokens)
+
+            if (error) {
+                console.log(`Error from useApi::putAuthed(${path},${body}): `)
+                console.log(error)
+
+                if (error.status === 401 && redirectToLoginOnAuthFail)
+                    await app.runWithContext(() => navigateTo('/login'))
+
+                if (error.status === 502)
+                    await app.runWithContext(() => navigateTo('/server-offline'))
+
+                return {error}
+            }
+
+            return {data}
+        },
     }
 }

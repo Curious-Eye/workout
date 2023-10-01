@@ -64,7 +64,7 @@ export const useWorkoutApi = (app = undefined) => {
         /**
          * Delete a workout
          * @param workoutId {string}
-         * @return {Promise<{data?: Workout, error?: *}>}
+         * @return {Promise<{error?: *}>}
          */
         async deleteWorkout(workoutId) {
             console.log(`Try deleteWorkout. workoutId=${workoutId}`)
@@ -92,7 +92,28 @@ export const useWorkoutApi = (app = undefined) => {
 
             useMainStore().setWorkout(data)
 
-            return Promise.resolve()
+            return {data}
+        },
+        /**
+         * Move recorded exercise withing a workout
+         * @param workoutId {string}
+         * @param fromIndex {number}
+         * @param toIndex {number}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async moveRecordedExercise(workoutId, fromIndex, toIndex) {
+            console.log(`Try moveRecordedExercise. workoutId=${workoutId}, fromIndex=${fromIndex}, toIndex=${toIndex}`)
+            const {data, error} = await useApi(app).putAuthed(
+                `/api/workouts/${workoutId}/actions/move-exercise?fromIndex=${fromIndex}&toIndex=${toIndex}`,
+                undefined
+            )
+
+            if (!!error)
+                return {error}
+
+            useMainStore().setWorkout(data)
+
+            return {data}
         },
     }
 }

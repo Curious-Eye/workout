@@ -23,6 +23,7 @@
     "pinia": "^2.1.6",
     "sass": "^1.67.0",
     "vue3-apexcharts": "^1.4.4",
+    "vuedraggable": "next",
     "vuetify": "next"
   }
 }
