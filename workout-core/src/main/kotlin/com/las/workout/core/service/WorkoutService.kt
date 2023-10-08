@@ -1,6 +1,7 @@
 package com.las.workout.core.service
 
 import com.las.core.ext.errorIf
+import com.las.core.ext.thisOrEmpty
 import com.las.core.ext.zipWhenToPair
 import com.las.workout.core.api.dto.WorkoutRecordExerciseRqDto
 import com.las.workout.core.api.dto.WorkoutRecordRqDto
@@ -162,11 +163,8 @@ class WorkoutService {
         return exerciseRepository.findAllByUserId(userId)
     }
 
-    fun getWorkouts(userId: String, order: Boolean = true): Flux<WorkoutEntity> {
-        return if (order)
-            workoutRepository.findAllByUserIdOrderByDateDesc(userId)
-        else
-            workoutRepository.findAllByUserId(userId)
+    fun getWorkouts(userId: String, order: Boolean = true, tags: List<String>? = null): Flux<WorkoutEntity> {
+        return workoutRepository.findWorkoutsForUser(userId = userId, order = order, tags = tags.thisOrEmpty())
     }
 
     fun findAllByExercise(exerciseId: String): Flux<WorkoutEntity> {

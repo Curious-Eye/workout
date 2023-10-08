@@ -2,17 +2,25 @@ package com.las.workout.core.data.entity
 
 import org.springframework.data.annotation.*
 import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Field
 import java.util.*
+
+const val WORKOUT_USER_ID_FIELD_NAME = "userId"
+const val WORKOUT_TAGS_FIELD_NAME = "tags"
+const val WORKOUT_DATE_FIELD_NAME = "date"
 
 @Document(collection = "workouts")
 @TypeAlias("WorkoutEntity")
 class WorkoutEntity(
     @Id
     val id: String,
+    @Field(name = WORKOUT_DATE_FIELD_NAME)
     var date: Date,
+    @Field(name = WORKOUT_USER_ID_FIELD_NAME)
     val userId: String,
     val exercises: MutableList<ExerciseRecordEntity> = mutableListOf(),
     var mesocycle: String? = null,
+    @Field(name = WORKOUT_TAGS_FIELD_NAME)
     var tags: MutableList<String>? = null,
 ) {
 

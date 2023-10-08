@@ -453,4 +453,45 @@ class WorkoutTests : BaseTest() {
         entity.tags!![1] shouldBe "tag 2"
     }
 
+    @Test
+    fun `User should be able to find workouts by tags`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1",
+                    tags = mutableListOf("Squats", "Push-ups")
+                ),
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w2",
+                    userId = "u1",
+                    tags = mutableListOf("Squats")
+                ),
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w3",
+                    userId = "u1",
+                    tags = mutableListOf("Push-ups")
+                ),
+            )
+        ).collectList().block()
+
+        // WHEN
+        val res = webTestClient.getAuthed(userSetup.accessToken)
+            .uri("/api/workouts?tags=Squats")
+            .exchange()
+
+        // THEN
+        res.expectStatus().is2xxSuccessful
+
+        val respBody =
+            res.expectBody(object : ParameterizedTypeReference<List<WorkoutDto>>() {}).returnResult().responseBody!!
+        respBody.size shouldBe 2
+        val w1 = respBody.firstOrNull { it.id == "w1" }
+        val w2 = respBody.firstOrNull { it.id == "w2" }
+        w1 shouldNotBe null
+        w2 shouldNotBe null
+    }
+
 }

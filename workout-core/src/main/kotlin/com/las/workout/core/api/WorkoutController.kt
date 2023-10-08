@@ -47,7 +47,8 @@ class WorkoutController {
     @GetMapping("/api/workouts")
     fun getWorkouts(
         @Parameter(hidden = true) @AuthenticationPrincipal user: User,
-    ): Flux<WorkoutDto> = workoutService.getWorkouts(userId = user.username).map { WorkoutDto(it) }
+        @RequestParam(required = false) tags: List<String>?,
+    ): Flux<WorkoutDto> = workoutService.getWorkouts(userId = user.username, tags = tags).map { WorkoutDto(it) }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/api/workouts/{id}/exercises")
