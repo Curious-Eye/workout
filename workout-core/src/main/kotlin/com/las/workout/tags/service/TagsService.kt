@@ -23,13 +23,25 @@ class TagsService {
 
                 tagsRepository.save(it)
             }
-            .switchIfEmpty(tagsRepository.save(
+            .switchIfEmpty(
+                tagsRepository.save(
+                    TagsEntity(
+                        id = userId,
+                        userId = userId,
+                        tags = tags.toMutableList()
+                    )
+                )
+            )
+    }
+
+    fun getTags(userId: String): Mono<TagsEntity> =
+        tagsRepository.findById(userId)
+            .defaultIfEmpty(
                 TagsEntity(
                     id = userId,
                     userId = userId,
-                    tags = tags.toMutableList()
+                    tags = mutableListOf()
                 )
-            ))
-    }
+            )
 
 }

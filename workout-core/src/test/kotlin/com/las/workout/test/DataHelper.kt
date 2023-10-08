@@ -1,6 +1,8 @@
 package com.las.workout.test
 
-import com.las.workout.core.data.entity.*
+import com.las.workout.core.data.entity.ExerciseEntity
+import com.las.workout.core.data.entity.ExerciseRecordEntity
+import com.las.workout.core.data.entity.WorkoutEntity
 import com.las.workout.core.data.repository.ExerciseRepository
 import com.las.workout.core.data.repository.WorkoutRepository
 import com.las.workout.jwt.service.AuthTokensService
