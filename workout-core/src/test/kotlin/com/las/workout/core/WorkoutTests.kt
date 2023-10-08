@@ -451,6 +451,11 @@ class WorkoutTests : BaseTest() {
         entity.tags!!.size shouldBe 2
         entity.tags!![0] shouldBe "tag 1"
         entity.tags!![1] shouldBe "tag 2"
+
+        val tagsEntity = dataHelper.tagsRepository.findById("u1").block()!!
+        tagsEntity.tags.size shouldBe 2
+        tagsEntity.tags[0] shouldBe "tag 1"
+        tagsEntity.tags[1] shouldBe "tag 2"
     }
 
     @Test

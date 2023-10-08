@@ -1,6 +1,7 @@
 package com.las.workout.core.service
 
 import com.las.core.ext.errorIf
+import com.las.core.ext.flatNext
 import com.las.core.ext.thisOrEmpty
 import com.las.core.ext.zipWhenToPair
 import com.las.workout.core.api.dto.WorkoutRecordExerciseRqDto
@@ -10,6 +11,7 @@ import com.las.workout.core.data.repository.ExerciseRepository
 import com.las.workout.core.data.repository.WorkoutRepository
 import com.las.workout.exception.EntityNotFoundException
 import com.las.workout.exception.IllegalArgumentsException
+import com.las.workout.tags.service.TagsService
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +28,7 @@ class WorkoutService {
 
     @Autowired private lateinit var workoutRepository: WorkoutRepository
     @Autowired private lateinit var exerciseRepository: ExerciseRepository
+    @Autowired private lateinit var tagsService: TagsService
 
     @Transactional
     fun recordWorkout(userId: String, workout: WorkoutRecordRqDto): Mono<WorkoutEntity> {
@@ -229,6 +232,7 @@ class WorkoutService {
                 }
 
                 workoutRepository.save(it)
+                    .flatNext { tagsService.addTags(userId, tags) }
             }
     }
 

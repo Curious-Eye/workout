@@ -4,6 +4,7 @@ import com.las.workout.core.data.entity.*
 import com.las.workout.core.data.repository.ExerciseRepository
 import com.las.workout.core.data.repository.WorkoutRepository
 import com.las.workout.jwt.service.AuthTokensService
+import com.las.workout.tags.data.repository.TagsRepository
 import com.las.workout.user.data.entity.UserEntity
 import com.las.workout.user.data.repository.UserRepository
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
@@ -17,6 +18,7 @@ class DataHelper(
     val workoutRepository: WorkoutRepository,
     val userRepository: UserRepository,
     val exerciseRepository: ExerciseRepository,
+    val tagsRepository: TagsRepository,
     private val passwordEncoder: PasswordEncoder,
     private val authTokensService: AuthTokensService,
 ) {
