@@ -94,4 +94,13 @@ class WorkoutController {
         toIndex = toIndex
     )
         .map { WorkoutDto(it) }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/api/workouts/{workoutId}/tags")
+    fun addTagsToWorkout(
+        @Parameter(hidden = true) @AuthenticationPrincipal user: User,
+        @PathVariable workoutId: String,
+        @RequestBody rq: WorkoutAddTagsRqDto
+    ): Mono<WorkoutDto> = workoutService.tagWorkout(userId = user.username, workoutId = workoutId, rq.tags)
+        .map { WorkoutDto(it) }
 }

@@ -213,4 +213,25 @@ class WorkoutService {
             }
     }
 
+    @Transactional
+    fun tagWorkout(userId: String, workoutId: String, tags: List<String>): Mono<WorkoutEntity> {
+        log.debug("User {} add tags to workout {}. Tags: {}", userId, workoutId, tags)
+
+        if (tags.isEmpty())
+            return Mono.error(IllegalArgumentsException("tags should not be empty"))
+
+        return findWorkoutForUser(userId = userId, workoutId = workoutId)
+            .flatMap {
+                if (it.tags == null)
+                    it.tags = mutableListOf()
+
+                tags.forEach { tag ->
+                    if (!it.tags!!.contains(tag))
+                        it.tags!!.add(tag)
+                }
+
+                workoutRepository.save(it)
+            }
+    }
+
 }

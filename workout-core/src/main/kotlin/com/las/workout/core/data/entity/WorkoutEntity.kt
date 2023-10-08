@@ -13,6 +13,7 @@ class WorkoutEntity(
     val userId: String,
     val exercises: MutableList<ExerciseRecordEntity> = mutableListOf(),
     var mesocycle: String? = null,
+    var tags: MutableList<String>? = null,
 ) {
 
     @CreatedDate

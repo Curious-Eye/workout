@@ -10,6 +10,7 @@ data class WorkoutDto(
     val id: String,
     val date: Date,
     val exercises: List<WorkoutRecordedExerciseDto>,
+    val tags: List<String>? = null,
     var mesocycle: String? = null,
 ) {
 
@@ -17,7 +18,8 @@ data class WorkoutDto(
         id = entity.id,
         date = entity.date,
         exercises = entity.exercises.map { WorkoutRecordedExerciseDto(it) },
-        mesocycle = entity.mesocycle
+        mesocycle = entity.mesocycle,
+        tags = entity.tags
     )
 
 }
@@ -115,4 +117,8 @@ data class IsometricDto(
 data class EccentricDto(
     val minSeconds: Float,
     val maxSeconds: Float?
+)
+
+data class WorkoutAddTagsRqDto(
+    val tags: List<String>
 )

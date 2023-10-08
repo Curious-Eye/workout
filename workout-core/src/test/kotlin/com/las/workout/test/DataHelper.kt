@@ -50,6 +50,7 @@ class DataHelper(
                 userId = workout.userId,
                 exercises = workout.exercises,
                 mesocycle = workout.mesocycle,
+                tags = workout.tags
             )
         )
     }
@@ -85,6 +86,7 @@ class DataHelper(
         val mesocycle: String = "meso 1",
         val userId: String = "u1",
         val exercises: MutableList<ExerciseRecordEntity> = mutableListOf(),
+        val tags: MutableList<String>? = null,
     )
 
     data class ExerciseSetupRqDto(

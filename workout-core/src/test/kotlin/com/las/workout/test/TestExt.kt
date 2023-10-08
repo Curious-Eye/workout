@@ -20,7 +20,7 @@ fun WebTestClient.deleteAuthed(accessToken: String): WebTestClient.RequestHeader
             this.header("Authorization", "Bearer $accessToken")
         }
 
-fun WebTestClient.putAuthed(accessToken: String): WebTestClient.RequestHeadersUriSpec<*> =
+fun WebTestClient.putAuthed(accessToken: String): WebTestClient.RequestBodyUriSpec =
     this.put()
         .apply {
             this.header("Authorization", "Bearer $accessToken")

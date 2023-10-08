@@ -5,7 +5,6 @@ import com.las.workout.core.api.dto.*
 import com.las.workout.core.data.entity.ExerciseRecordEntity
 import com.las.workout.core.data.entity.RepetitionsInReserveEntity
 import com.las.workout.core.data.entity.WeightEntity
-import com.las.workout.stats.api.dto.StatsGetForExerciseRespDto
 import com.las.workout.test.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -190,40 +189,42 @@ class WorkoutTests : BaseTest() {
         ).collectList().block()!!
         val date1 = Date()
         val date2 = Date(Instant.now().plusSeconds(60 * 60 * 24).toEpochMilli())
-        dataHelper.setupWorkouts(listOf(
-            DataHelper.WorkoutSetupRqDto(
-                id = "w1",
-                exercises = mutableListOf(
-                    ExerciseRecordEntity(
-                        exerciseId = "e1",
-                        repetitions = 5,
-                        weight = WeightEntity(kg = 50f),
-                        rir = RepetitionsInReserveEntity(min = 2, max = 3)
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    exercises = mutableListOf(
+                        ExerciseRecordEntity(
+                            exerciseId = "e1",
+                            repetitions = 5,
+                            weight = WeightEntity(kg = 50f),
+                            rir = RepetitionsInReserveEntity(min = 2, max = 3)
+                        ),
+                        ExerciseRecordEntity(
+                            exerciseId = "e1",
+                            repetitions = 6,
+                            weight = WeightEntity(kg = 60f),
+                            rir = RepetitionsInReserveEntity(min = 1, max = 2)
+                        )
                     ),
-                    ExerciseRecordEntity(
-                        exerciseId = "e1",
-                        repetitions = 6,
-                        weight = WeightEntity(kg = 60f),
-                        rir = RepetitionsInReserveEntity(min = 1, max = 2)
-                    )
+                    date = date1,
+                    mesocycle = "meso 1"
                 ),
-                date = date1,
-                mesocycle = "meso 1"
-            ),
-            DataHelper.WorkoutSetupRqDto(
-                id = "w2",
-                exercises = mutableListOf(
-                    ExerciseRecordEntity(
-                        exerciseId = "e2",
-                        repetitions = 5,
-                        weight = WeightEntity(kg = 52.5f),
-                        rir = RepetitionsInReserveEntity(min = 1, max = 2)
-                    )
-                ),
-                date = date2,
-                mesocycle = "meso 2"
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w2",
+                    exercises = mutableListOf(
+                        ExerciseRecordEntity(
+                            exerciseId = "e2",
+                            repetitions = 5,
+                            weight = WeightEntity(kg = 52.5f),
+                            rir = RepetitionsInReserveEntity(min = 1, max = 2)
+                        )
+                    ),
+                    date = date2,
+                    mesocycle = "meso 2"
+                )
             )
-        )).collectList().block()
+        ).collectList().block()
 
         // WHEN
         val res = webTestClient.getAuthed(userSetup.accessToken)
@@ -233,7 +234,8 @@ class WorkoutTests : BaseTest() {
         // THEN
         res.expectStatus().is2xxSuccessful
 
-        val resp = res.expectBody(object : ParameterizedTypeReference<List<WorkoutDto>>() {}).returnResult().responseBody!!
+        val resp =
+            res.expectBody(object : ParameterizedTypeReference<List<WorkoutDto>>() {}).returnResult().responseBody!!
         resp.size shouldBe 2
         val w1 = resp.first { it.id == "w1" }
 
@@ -264,12 +266,14 @@ class WorkoutTests : BaseTest() {
     fun `User should be able to delete a workout`() {
         // GIVEN
         val userSetup = dataHelper.setupUser(id = "u1").block()!!
-        dataHelper.setupWorkouts(listOf(
-            DataHelper.WorkoutSetupRqDto(
-                id = "w1",
-                userId = "u1"
-            ),
-        )).collectList().block()
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1"
+                ),
+            )
+        ).collectList().block()
 
         // WHEN
         val res = webTestClient.deleteAuthed(userSetup.accessToken)
@@ -285,24 +289,26 @@ class WorkoutTests : BaseTest() {
     fun `User should be able to delete exercise record`() {
         // GIVEN
         val userSetup = dataHelper.setupUser(id = "u1").block()!!
-        dataHelper.setupWorkouts(listOf(
-            DataHelper.WorkoutSetupRqDto(
-                id = "w1",
-                userId = "u1",
-                exercises = mutableListOf(
-                    ExerciseRecordEntity(
-                        exerciseId = "e1",
-                        repetitions = 5,
-                        weight = WeightEntity(bodyWeight = true)
-                    ),
-                    ExerciseRecordEntity(
-                        exerciseId = "e2",
-                        repetitions = 6,
-                        weight = WeightEntity(kg = 10f)
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1",
+                    exercises = mutableListOf(
+                        ExerciseRecordEntity(
+                            exerciseId = "e1",
+                            repetitions = 5,
+                            weight = WeightEntity(bodyWeight = true)
+                        ),
+                        ExerciseRecordEntity(
+                            exerciseId = "e2",
+                            repetitions = 6,
+                            weight = WeightEntity(kg = 10f)
+                        )
                     )
-                )
-            ),
-        )).collectList().block()
+                ),
+            )
+        ).collectList().block()
 
         // WHEN
         val res = webTestClient.deleteAuthed(userSetup.accessToken)
@@ -329,29 +335,31 @@ class WorkoutTests : BaseTest() {
     fun `User should be able to move recorded exercises withing the workout`() {
         // GIVEN
         val userSetup = dataHelper.setupUser(id = "u1").block()!!
-        dataHelper.setupWorkouts(listOf(
-            DataHelper.WorkoutSetupRqDto(
-                id = "w1",
-                userId = "u1",
-                exercises = mutableListOf(
-                    ExerciseRecordEntity(
-                        exerciseId = "e1",
-                        repetitions = 5,
-                        weight = WeightEntity(bodyWeight = true)
-                    ),
-                    ExerciseRecordEntity(
-                        exerciseId = "e2",
-                        repetitions = 6,
-                        weight = WeightEntity(kg = 10f)
-                    ),
-                    ExerciseRecordEntity(
-                        exerciseId = "e3",
-                        repetitions = 7,
-                        weight = WeightEntity(kg = 20f)
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1",
+                    exercises = mutableListOf(
+                        ExerciseRecordEntity(
+                            exerciseId = "e1",
+                            repetitions = 5,
+                            weight = WeightEntity(bodyWeight = true)
+                        ),
+                        ExerciseRecordEntity(
+                            exerciseId = "e2",
+                            repetitions = 6,
+                            weight = WeightEntity(kg = 10f)
+                        ),
+                        ExerciseRecordEntity(
+                            exerciseId = "e3",
+                            repetitions = 7,
+                            weight = WeightEntity(kg = 20f)
+                        )
                     )
-                )
-            ),
-        )).collectList().block()
+                ),
+            )
+        ).collectList().block()
         var fromIndex = 0
         var toIndex = 2
 
@@ -409,4 +417,40 @@ class WorkoutTests : BaseTest() {
         respBody.exercises[2].repetitions shouldBe 7
         respBody.exercises[2].weight.kg shouldBe 20f
     }
+
+    @Test
+    fun `User should be able to add tags to workouts`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1",
+                ),
+            )
+        ).collectList().block()
+        val tag1 = "tag 1"
+        val tag2 = "tag 2"
+
+        // WHEN
+        val resp = webTestClient.putAuthed(userSetup.accessToken)
+            .uri("/api/workouts/w1/tags")
+            .bodyValue(WorkoutAddTagsRqDto(listOf(tag1, tag2)))
+            .exchange()
+
+        // THEN
+        resp.expectStatus().is2xxSuccessful
+
+        val respBody = resp.expectBody(WorkoutDto::class.java).returnResult().responseBody!!
+        respBody.tags!!.size shouldBe 2
+        respBody.tags!![0] shouldBe "tag 1"
+        respBody.tags!![1] shouldBe "tag 2"
+
+        val entity = dataHelper.workoutRepository.findById("w1").block()!!
+        entity.tags!!.size shouldBe 2
+        entity.tags!![0] shouldBe "tag 1"
+        entity.tags!![1] shouldBe "tag 2"
+    }
+
 }
