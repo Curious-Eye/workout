@@ -236,4 +236,21 @@ class WorkoutService {
             }
     }
 
+    @Transactional
+    fun untagWorkout(userId: String, workoutId: String, tagInd: Int): Mono<WorkoutEntity> {
+        log.debug("User {} for workout {} delete tag at {}", userId, workoutId, tagInd)
+
+        if (tagInd < 0)
+            return Mono.error(IllegalArgumentsException("tagInd should not be negative"))
+
+        return findWorkoutForUser(userId = userId, workoutId = workoutId)
+            .flatMap {
+                if (it.tags != null && it.tags!!.size > tagInd) {
+                    it.tags!!.removeAt(tagInd)
+                    workoutRepository.save(it)
+                } else
+                    Mono.just(it)
+            }
+    }
+
 }

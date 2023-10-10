@@ -499,4 +499,36 @@ class WorkoutTests : BaseTest() {
         w2 shouldNotBe null
     }
 
+    @Test
+    fun `User should be able to untag a workout`() {
+        // GIVEN
+        val userSetup = dataHelper.setupUser(id = "u1").block()!!
+        dataHelper.setupWorkouts(
+            listOf(
+                DataHelper.WorkoutSetupRqDto(
+                    id = "w1",
+                    userId = "u1",
+                    tags = mutableListOf("Squats", "Push-ups")
+                ),
+            )
+        ).collectList().block()
+        val tagInd = 1
+
+        // WHEN
+        val resp = webTestClient.deleteAuthed(userSetup)
+            .uri("/api/workouts/w1/tags/$tagInd")
+            .exchange()
+
+        // THEN
+        resp.expectStatus().is2xxSuccessful
+
+        val respBody = resp.expectBody(WorkoutDto::class.java).returnResult().responseBody!!
+        respBody.tags!!.size shouldBe 1
+        respBody.tags!![0] shouldBe "Squats"
+
+        val entity = dataHelper.workoutRepository.findById("w1").block()!!
+        entity.tags!!.size shouldBe 1
+        entity.tags!![0] shouldBe "Squats"
+    }
+
 }

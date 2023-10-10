@@ -23,6 +23,9 @@ fun WebTestClient.deleteAuthed(accessToken: String): WebTestClient.RequestHeader
             this.header("Authorization", "Bearer $accessToken")
         }
 
+fun WebTestClient.deleteAuthed(userSetup: DataHelper.UserSetupResDto): WebTestClient.RequestHeadersUriSpec<*> =
+    deleteAuthed(userSetup.accessToken)
+
 fun WebTestClient.putAuthed(accessToken: String): WebTestClient.RequestBodyUriSpec =
     this.put()
         .apply {
