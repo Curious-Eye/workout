@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-flex flex-column align-center justify-center">
     <v-snackbar
         v-model="showErrorSnackbar"
         location="top"
@@ -18,6 +18,33 @@
         </v-btn>
       </template>
     </v-snackbar>
+    <v-select
+        class="w-50 align-self-end mr-4 mb-3"
+        style="min-width: 150px"
+        v-model="selectedTags"
+        :items="useMainStore().tags"
+        color="teal-darken-1"
+        base-color="teal-darken-4"
+        variant="outlined"
+        label="Tags"
+        hide-details
+        chips
+        multiple
+        @update:model-value="reloadWorkouts"
+    >
+      <template v-slot:selection="{ item, index }">
+        <v-chip v-if="index < 2">
+          <span>{{ item.title }}</span>
+        </v-chip>
+        <span
+            v-if="index === 2"
+            class="text-grey text-caption align-self-center"
+        >
+<!--          (+{{ selectedTags.length - 2 }} others)-->
+          ...
+        </span>
+      </template>
+    </v-select>
     <v-virtual-scroll
         :items="useMainStore().workouts"
         height="100%"
@@ -59,10 +86,11 @@
 
               <v-virtual-scroll :items="[1]">
                 <template v-slot:default="{ item }">
-                  <v-date-picker v-model="workoutInput.date" color="teal-darken-1" hide-actions show-adjacent-months title="">
+                  <v-date-picker v-model="workoutInput.date" color="teal-darken-1" hide-actions show-adjacent-months
+                                 title="">
                     <template v-slot:header="{header}">
                       <div class="ml-6 text-h6">
-                        {{header}}
+                        {{ header }}
                       </div>
                     </template>
                   </v-date-picker>
@@ -93,16 +121,13 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const {data: workouts} = await useAsyncData('workouts', (ctx) => useWorkoutApi(ctx).getWorkouts())
-const {data: exercises} = await useAsyncData('exercises', (ctx) => useExerciseApi(ctx).getExercises())
-if (workouts.value?.data)
-  useMainStore().setWorkouts(workouts.value?.data)
-
-if (exercises.value?.data)
-  useMainStore().setExercises(exercises.value?.data)
+await useAsyncData('workouts', (ctx) => useWorkoutApi(ctx).getWorkouts())
+await useAsyncData('exercises', (ctx) => useExerciseApi(ctx).getExercises())
+await useAsyncData('tags', (ctx) => useTagsApi(ctx).getTags())
+const selectedTags = ref([] as string[])
 
 async function reloadWorkouts() {
-  await useWorkoutApi(null).getWorkouts()
+  await useWorkoutApi(null).getWorkouts(selectedTags.value)
 }
 
 const showRecordWorkoutDialog = ref(false)

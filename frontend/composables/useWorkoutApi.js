@@ -1,4 +1,5 @@
 import {useMainStore} from "~/store";
+import {useApi} from "~/composables/useApi";
 
 /**
  *
@@ -8,12 +9,21 @@ export const useWorkoutApi = (app = undefined) => {
     return {
         /**
          * Get all workouts
+         * @param tags {string[]}
          * @param redirectToLoginOnAuthFail {boolean}
          * @return {Promise<{data?: [Workout], error?: *}>}
          */
-        async getWorkouts(redirectToLoginOnAuthFail = true) {
-            console.log('Try getWorkouts')
-            const {data, error} = await useApi(app).getAuthed('/api/workouts', redirectToLoginOnAuthFail)
+        async getWorkouts(tags = [], redirectToLoginOnAuthFail = true) {
+            console.log(`Try getWorkouts with tags ${tags}`)
+            let uri = '/api/workouts'
+
+            if (tags.length > 0) {
+                uri += '?'
+                tags.forEach(tag => uri += `tags=${tag}&`)
+                uri = uri.slice(0, -1);
+            }
+
+            const {data, error} = await useApi(app).getAuthed(uri, redirectToLoginOnAuthFail)
 
             if (!!error)
                 return {error}
@@ -85,7 +95,10 @@ export const useWorkoutApi = (app = undefined) => {
          */
         async deleteRecordedExercise(workoutId, exerciseIndex) {
             console.log(`Try deleteRecordedExercise. workoutId=${workoutId}, exerciseIndex=${exerciseIndex}`)
-            const {data, error} = await useApi(app).deleteAuthed(`/api/workouts/${workoutId}/exercises/${exerciseIndex}`)
+            const {
+                data,
+                error
+            } = await useApi(app).deleteAuthed(`/api/workouts/${workoutId}/exercises/${exerciseIndex}`)
 
             if (!!error)
                 return {error}
@@ -107,6 +120,44 @@ export const useWorkoutApi = (app = undefined) => {
                 `/api/workouts/${workoutId}/actions/move-exercise?fromIndex=${fromIndex}&toIndex=${toIndex}`,
                 undefined
             )
+
+            if (!!error)
+                return {error}
+
+            useMainStore().setWorkout(data)
+
+            return {data}
+        },
+        /**
+         * Add a tag to a workout
+         * @param tag {string}
+         * @param workoutId {string}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async addTag(tag, workoutId) {
+            console.log(`Try add tag "${tag}" to workout ${workoutId}`)
+            const {data, error} = await useApi(app).postAuthed(
+                `/api/workouts/${workoutId}/tags`,
+                {tags: [tag]}
+            )
+
+            if (!!error)
+                return {error}
+
+            useMainStore().setWorkout(data)
+            useMainStore().addTag(tag)
+
+            return {data}
+        },
+        /**
+         * Remove a tag from a workout
+         * @param workoutId {string}
+         * @param tagInd {number}
+         * @return {Promise<{data?: Workout, error?: *}>}
+         */
+        async removeTag(workoutId, tagInd) {
+            console.log(`Try remove tag at position ${tagInd} from workout ${workoutId}`)
+            const {data, error} = await useApi(app).deleteAuthed(`/api/workouts/${workoutId}/tags/${tagInd}`)
 
             if (!!error)
                 return {error}

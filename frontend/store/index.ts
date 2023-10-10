@@ -6,23 +6,19 @@ export const useMainStore = defineStore('main', {
         workouts: ref([] as Workout[]),
         exercises: [] as Exercise[],
         lastExerciseRecordInput: {} as ExerciseRecord,
-        authenticated: !!useCookie('accessToken').value
+        authenticated: !!useCookie('accessToken').value,
+        tags: ref([] as string[])
     }),
     getters: {
     },
     actions: {
         setWorkouts(workouts: Workout[]) {
-            for (let i = 0; i < workouts.length; ++i) {
-                workouts[i].date = new Date(workouts[i].date)
-            }
             this.workouts = workouts
         },
         addWorkout(workout: Workout) {
-            workout.date = new Date(workout.date)
             this.workouts.splice(0, 0, workout)
         },
         setWorkout(workout: Workout) {
-            workout.date = new Date(workout.date)
             const ind = this.workouts.findIndex(value => value.id === workout.id)
             if (ind !== -1) this.workouts.splice(ind, 1, workout)
             else this.workouts.push(workout)
@@ -40,6 +36,13 @@ export const useMainStore = defineStore('main', {
             const ind = this.workouts.findIndex(value => value.id === workoutId)
             this.workouts.splice(ind, 1)
         },
+        setTags(tags: string[]) {
+            this.tags = tags
+        },
+        addTag(tag: string) {
+            if (this.tags.findIndex(value => value === tag) == -1)
+                this.tags.splice(this.tags.length - 1, 0, tag)
+        }
     },
     persist: {
         storage: persistedState.localStorage

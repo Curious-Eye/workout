@@ -14,7 +14,7 @@
         </v-btn>
       </v-toolbar>
     </div>
-    <div class="d-flex flex-grow-1 align-center justify-center">
+    <div class="d-flex flex-grow-1 justify-center">
       <slot />
     </div>
   </div>

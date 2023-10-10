@@ -1,8 +1,9 @@
 export interface Workout {
     id: string
-    date: Date
+    date: string
     exercises: Array<ExerciseRecord>
     mesocycle?: string
+    tags?: Array<string>
 }
 
 export interface ExerciseRecord {

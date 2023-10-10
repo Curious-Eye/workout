@@ -51,7 +51,7 @@ const options = {
         fontSize: '14px'
       }
     },
-    categories: props.stats?.volume.map(v => utilsMain.getWorkoutDisplayDate(v.date))
+    categories: props.stats?.volume.map(v => utilsMain.getWorkoutDisplayDateFromDate(v.date))
   },
   yaxis: {
     title: {
