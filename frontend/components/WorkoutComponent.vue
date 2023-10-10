@@ -6,12 +6,11 @@
     >
       <template v-slot:title>
         <div class="d-flex justify-space-between pb-0">
-          <div>
-            {{ getWorkoutMesocycle() }}
+          <div class="flex-grow-1">
+            <v-text-field class="text-field-no-padding" bg-color="teal" v-model="workout.mesocycle" variant="solo" flat hide-details />
           </div>
           <div>
             <v-btn
-                class="mb-5"
                 icon="mdi-file-remove-outline"
                 variant="text"
                 density="compact"
@@ -283,7 +282,7 @@ async function recordExercise() {
     if (val.rir?.max && val.rir?.max <= 0)
       val.rir.max = undefined
 
-    if (val.rir?.min && val.rir?.min < 0)
+    if (val.rir?.min && val.rir?.min < 0 || !val.rir?.min && val.rir?.min !== 0)
       val.rir = undefined
 
     if (val.contraction?.eccentric && val.contraction.eccentric.minSeconds <= 0)
@@ -443,4 +442,7 @@ async function removeTagAt(index: number) {
 </script>
 
 <style scoped>
+.text-field-no-padding /deep/ .v-field__input {
+  padding: 0;
+}
 </style>
