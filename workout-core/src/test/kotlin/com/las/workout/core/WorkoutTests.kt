@@ -434,7 +434,7 @@ class WorkoutTests : BaseTest() {
         val tag2 = "tag 2"
 
         // WHEN
-        val resp = webTestClient.putAuthed(userSetup.accessToken)
+        val resp = webTestClient.postAuthed(userSetup.accessToken)
             .uri("/api/workouts/w1/tags")
             .bodyValue(WorkoutAddTagsRqDto(listOf(tag1, tag2)))
             .exchange()
