@@ -29,7 +29,7 @@ class StatsService {
             }
             .map { workouts ->
                 StatsGetForExerciseRespDto(
-                    volume = calcVolumeForExercise(exerciseId, workouts)
+                    volume = calcVolumeForExercise(exerciseId, workouts, false)
                 )
             }
     }
@@ -42,14 +42,14 @@ class StatsService {
             .zipWithToPair(
                 workoutService.getWorkouts(userId = userId, order = false)
                     .collectList()
-                    .map { it.filter { w -> w.exercises.isNotEmpty() } }
+                    .map { it.filter { w -> w.exercises.any { e -> e.warmup != true } } }
             )
             .map { (exercises, workouts) -> exercises to workouts.sortedBy { it.date } }
             .flatMap { (exercises, workouts) ->
                 Mono.fromCallable {
                     StatsGetForUserRespDto(
                         stats = exercises.map { exercise ->
-                            val stat = ExerciseStatsDto(calcVolumeForExercise(exercise.id, workouts))
+                            val stat = ExerciseStatsDto(calcVolumeForExercise(exercise.id, workouts, false))
                             Pair(exercise.id, stat)
                         }
                             .associateBy({ it.first }) { it.second }
@@ -59,18 +59,23 @@ class StatsService {
     }
 
     private fun calcVolumeForExercise(exerciseId: String, workouts: List<WorkoutEntity>, includeWarmup: Boolean = true): List<WorkoutVolumeDto> {
-        return workouts.filter { it.exercises.any { e -> e.exerciseId == exerciseId } }.map { workout ->
-            WorkoutVolumeDto(
-                date = workout.date,
-                workoutId = workout.id,
-                volume = workout.exercises.filter { it.exerciseId == exerciseId && (includeWarmup || it.warmup != true) }
-                    .map {
-                        if (it.weight.bodyWeight == true) it.repetitions.toFloat()
-                        else it.weight.kg!! * it.repetitions
-                    }
-                    .reduce { acc, vl -> acc + vl }
-            )
+        return workouts.filter {
+            it.exercises.any { e -> e.exerciseId == exerciseId && (includeWarmup || e.warmup != true) }
         }
+            .map { workout ->
+                WorkoutVolumeDto(
+                    date = workout.date,
+                    workoutId = workout.id,
+                    volume = workout.exercises.filter {
+                        it.exerciseId == exerciseId && (includeWarmup || it.warmup != true)
+                    }
+                        .map {
+                            if (it.weight.bodyWeight == true) it.repetitions.toFloat()
+                            else it.weight.kg!! * it.repetitions
+                        }
+                        .reduce { acc, vl -> acc + vl }
+                )
+            }
     }
 
 }
