@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center">
-    <div class="d-flex mr-5 text-no-wrap align-center justify-center">
+    <div class="d-flex mr-5 align-center justify-center">
       <div class="pr-2">
         <v-menu transition="slide-y-transition" location="bottom">
           <template v-slot:activator="{ props }">
