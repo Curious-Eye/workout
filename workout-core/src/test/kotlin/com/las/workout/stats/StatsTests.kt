@@ -174,13 +174,13 @@ class StatsTests : BaseTest() {
         val v1 = resp.stats["e1"]!!.volume
         v1.size shouldBe 1
         v1[0].date shouldBe date1
-        v1[0].volume shouldBe 5f * 50 + 5 * 50
+        v1[0].volume shouldBe 500f // 5f * 50 + 5 * 50
         val v2 = resp.stats["e2"]!!.volume
         v2.size shouldBe 2
         v2[0].date shouldBe date2
-        v2[0].volume shouldBe 6f * 52.5 + 5 * 52.5
+        v2[0].volume shouldBe 577.5f // 6f * 52.5 + 5 * 52.5
         v2[1].date shouldBe date2
-        v2[1].volume shouldBe 6f * 60 + 6 * 60
+        v2[1].volume shouldBe 720f // 6f * 60 + 6 * 60
     }
 
 }
