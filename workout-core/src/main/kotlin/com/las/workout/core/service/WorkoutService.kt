@@ -73,9 +73,6 @@ class WorkoutService {
         if (rq.weight.bodyWeight == true && rq.weight.kg != null)
             return Mono.error(IllegalArgumentsException("Only one of bodyWeight or kg must be specified"))
 
-        if (rq.rir?.min?.let { it < 0 } == true)
-            return Mono.error(IllegalArgumentsException("Min value for repetitions in reserve must not be negative"))
-
         if (rq.rir?.max?.let { it < 0 } == true)
             return Mono.error(IllegalArgumentsException("Max value for repetitions in reserve must not be negative"))
 

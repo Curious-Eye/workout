@@ -282,7 +282,7 @@ async function recordExercise() {
     if (val.rir?.max && val.rir?.max <= 0)
       val.rir.max = undefined
 
-    if (val.rir?.min && val.rir?.min < 0 || !val.rir?.min && val.rir?.min !== 0)
+    if (!val.rir?.min && val.rir?.min !== 0)
       val.rir = undefined
 
     if (val.contraction?.eccentric && val.contraction.eccentric.minSeconds <= 0)
